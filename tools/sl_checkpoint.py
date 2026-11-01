@@ -57,4 +57,4 @@ if __name__=='__main__':
     args=p.parse_args()
     if args.mode=='verify':print('Verified races:',verify(args.database))
     elif args.mode=='save':save(args.database,args.archive)
-    else:restore(args.database,args.archive)
+    else:restore(args.archive,args.database)
