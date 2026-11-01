@@ -13,6 +13,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+import time
 from contextlib import closing
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -162,7 +163,20 @@ def record(logpath,batch,state,action,new_critical=0):
            state['index_errors'],state['reviewed'],state['critical'],new_critical])
 
 
+def runtime_budget_reached(started,minutes,now=None):
+    """Stop *between* batches, leaving cloud time to save the checkpoint.
+
+    A zero time budget means no additional limit. It does not cancel an
+    in-progress race page; the hosting job timeout remains the last resort.
+    """
+    if minutes <= 0:
+        return False
+    current = time.monotonic() if now is None else now
+    return current - started >= minutes * 60
+
+
 def run(args):
+    started=time.monotonic()
     db=(BASE/args.database).resolve()
     if not db.exists():
         print('STOP: Database not found. Check the data folder and run a pilot first.')
@@ -198,6 +212,10 @@ def run(args):
         print('Dates indexed and queue cleared; independently validate fixture coverage.')
         return 0
     for batch in range(1,args.batches+1):
+        if runtime_budget_reached(started,args.max_runtime_minutes):
+            print(f'Runtime budget reached ({args.max_runtime_minutes:.1f} minutes). '
+                  'Stopping after completed batch for checkpoint and exports.')
+            return 0
         cmd=[sys.executable,str(CODE/'sl_history.py')]
         cmd += ['--html-dir',str((BASE/args.offline_dir).resolve())] if args.offline_dir else ['--live']
         cmd += ['--from-date',args.start,'--to-date',args.end,
@@ -275,6 +293,8 @@ def main():
     p.add_argument('--start',default='2022-01-01')
     p.add_argument('--end',default='2026-10-21')
     p.add_argument('--batches',type=int,default=3)
+    p.add_argument('--max-runtime-minutes',type=float,default=0.0,
+                   help='Gracefully stop between batches, preserving time for cloud archive; 0 disables')
     p.add_argument('--batch-races',type=int,default=20)
     p.add_argument('--delay',type=float,default=6.0)
     p.add_argument('--date-order',choices=('newest','oldest'),default='newest')
@@ -287,7 +307,8 @@ def main():
     p.add_argument('--min-qa-sample',type=int,default=10)
     a=p.parse_args()
     if date.fromisoformat(a.start)>date.fromisoformat(a.end):p.error('start after end')
-    if a.batches<1 or not 1<=a.batch_races<=250 or a.delay<3:p.error('Invalid batch or delay')
+    if a.batches<1 or not 1<=a.batch_races<=250 or a.delay<3 or a.max_runtime_minutes<0:
+        p.error('Invalid batch, delay or runtime budget')
     if a.max_critical_per_batch<1 or not 0<a.max_critical_fraction<=1 or a.min_qa_sample<1:
         p.error('Invalid quality thresholds')
     return run(a)

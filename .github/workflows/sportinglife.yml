@@ -15,6 +15,8 @@ on:
         type: choice
         options: [newest, oldest]
         default: newest
+  # Private repository: one daily checkpointed run (03:27 UTC).
+  # Never schedule live collection unless separately enabled and authorised.
   schedule:
     - cron: "27 3 * * *"
 
@@ -28,7 +30,7 @@ concurrency:
 jobs:
   archive:
     # Never publish racing content to the public repository.
-    if: ${{ github.event.repository.private == true }}
+    if: ${{ github.event.repository.private == true && (github.event_name != 'schedule' || (vars.SL_SCHEDULE_ENABLED == 'true' && vars.SL_COLLECTION_ENABLED == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -37,7 +39,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       COLLECTION_ENABLED: ${{ vars.SL_COLLECTION_ENABLED }}
       OPERATION: ${{ github.event_name == 'schedule' && 'collect' || inputs.operation }}
-      DATE_ORDER: ${{ inputs.date_order || 'newest' }}
+      DATE_ORDER: ${{ github.event_name == 'schedule' && 'oldest' || inputs.date_order || 'newest' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -70,6 +72,7 @@ jobs:
           python src/sl_history.py --self-test
           python -m unittest discover -s tests -p 'test_v30_improvements.py'
           python -m unittest discover -s tests -p 'test_v31_isolated_race_errors.py'
+          python -m unittest discover -s tests -p 'test_v32_unattended_schedule.py'
           python tools/sl_source_audit.py data/racing_history.sqlite
           python tools/repair_surface.py --database data/racing_history.sqlite --apply
       - name: Collect one restartable batch
@@ -88,7 +91,8 @@ jobs:
           set +e
           python src/backfill_controller.py \
             --mode full --start 2022-01-01 --end 2026-10-31 \
-            --batches 12 --batch-races 20 --delay 6 \
+            --batches 36 --batch-races 20 --delay 6 \
+            --max-runtime-minutes 48 \
             --date-order "$DATE_ORDER" \
             --database data/racing_history.sqlite
           code=$?
@@ -110,11 +114,18 @@ jobs:
         run: |
           set -euo pipefail
           if [[ ! -f data/racing_history.sqlite ]]; then exit 0; fi
-          python tools/sl_checkpoint.py save data/racing_history.sqlite /tmp/racing_history.sqlite.gz
+          python tools/sl_checkpoint.py save data/racing_history.sqlite /tmp/racing_history.sqlite.new.gz
           if ! gh release view sl-database-checkpoint >/dev/null 2>&1; then
             gh release create sl-database-checkpoint --title 'Private racing database checkpoint' \
               --notes 'Resumable data checkpoint. No public redistribution.' --prerelease
           fi
+          # Preserve a rollback copy before overwriting the current checkpoint.
+          # The restore step downloads the existing /tmp/racing_history.sqlite.gz.
+          if [[ -f /tmp/racing_history.sqlite.gz ]]; then
+            cp /tmp/racing_history.sqlite.gz /tmp/racing_history.previous.sqlite.gz
+            gh release upload sl-database-checkpoint /tmp/racing_history.previous.sqlite.gz --clobber
+          fi
+          cp /tmp/racing_history.sqlite.new.gz /tmp/racing_history.sqlite.gz
           gh release upload sl-database-checkpoint /tmp/racing_history.sqlite.gz --clobber
       - name: Downloadable QA and exports
         if: always()
