@@ -37,6 +37,19 @@ EXTRA_RUNNER_FIELDS = ['status_raw', 'identity_source', 'margin_lengths_numeric'
 SOURCE = 'sportinglife'
 from sl_structured_parser import parse_runner_records
 
+def infer_surface_from_going(going, race_type):
+    """Conservative broad classification, never a verified course surface.
+
+    Standard going indicates All-Weather Flat racing, but does not identify
+    the track material or the precise course configuration.
+    """
+    label = ' '.join(str(going or '').lower().replace('-', ' ').split())
+    if str(race_type or '').lower() == 'flat' and label in {
+        'standard', 'standard to slow', 'standard to fast'
+    }:
+        return 'All-Weather'
+    return None
+
 def parse_race(html, url):
     """Preserve prior race metadata, replace unreliable runner text splitting."""
     race, _ = legacy_header_parser(html, url)
@@ -59,11 +72,13 @@ class AccessStopped(Exception):
     pass
 
 
-def date_range(start, end):
-    current = end
-    while current >= start:
+def date_range(start, end, order='newest'):
+    if order not in ('newest', 'oldest'):
+        raise ValueError('order must be newest or oldest')
+    current = end if order == 'newest' else start
+    while (current >= start if order == 'newest' else current <= end):
         yield current.isoformat()
-        current -= timedelta(days=1)
+        current += timedelta(days=-1 if order == 'newest' else 1)
 
 
 def parse_index(html, wanted_day):
@@ -144,6 +159,11 @@ def enhance(race, runners, listing):
     if 'national hunt flat' in name or 'nh flat' in name or 'bumper' in name or 'flat race' in name:
         race['race_type'] = 'nh_flat'
     flags = []
+    if not race.get('surface'):
+        inferred = infer_surface_from_going(race.get('going'), race.get('race_type'))
+        if inferred:
+            race['surface'] = inferred
+            flags.append('surface_inferred_from_going')
     time_seconds = race.get('winning_time_seconds')
     if not isinstance(time_seconds,(int,float)) or not 0 < time_seconds < 1200:
         flags.append('invalid_or_missing_winning_time')
@@ -412,7 +432,7 @@ def collect_with_connection(args, conn):
     day_count=0
     fetched=0
     stopped=False
-    for day in date_range(start,end):
+    for day in date_range(start,end,args.date_order):
         if day_count>=args.max_days or fetched>=args.max_races or stopped:
             break
         existing=conn.execute('SELECT * FROM days WHERE race_date=?',(day,)).fetchone()
@@ -498,6 +518,11 @@ def self_test():
     assert numeric_margin('') is None
     assert numeric_margin('sh') is None
     assert numeric_margin('hd') is None
+    assert infer_surface_from_going('Standard','flat') == 'All-Weather'
+    assert infer_surface_from_going('Standard to Slow','flat') == 'All-Weather'
+    assert infer_surface_from_going('Good','flat') is None
+    assert infer_surface_from_going('Standard','chase') is None
+    assert list(date_range(date(2022,1,1),date(2022,1,3),'oldest')) == ['2022-01-01','2022-01-02','2022-01-03']
     assert list(date_range(date(2022,1,1),date(2022,1,3))) == ['2022-01-03','2022-01-02','2022-01-01']
     url=BASE+'/racing/results/2022-10-21/cheltenham/708998/example-race'
     entries=parse_index(f'<a href="{url}">13:35 Showcasing Sustainability Handicap Hurdle</a>','2022-10-21')
@@ -543,6 +568,8 @@ def main():
     parser.add_argument('--from-date',help='Start day YYYY-MM-DD; default 2022-01-01')
     parser.add_argument('--to-date',help='End day YYYY-MM-DD; default today')
     parser.add_argument('--max-days',type=int,default=1,help='Dates to process in one run (default 1)')
+    parser.add_argument('--date-order',choices=('newest','oldest'),default='newest',
+                        help='Calendar traversal; newest remains the legacy default')
     parser.add_argument('--max-races',type=int,default=3,help='Race pages to process in one run (default 3)')
     parser.add_argument('--delay',type=float,default=4,help='HTTP delay seconds (minimum 3)')
     parser.add_argument('--retry-errors',action='store_true',help='Retry previously failed records')
