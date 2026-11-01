@@ -72,6 +72,7 @@ jobs:
           python src/sl_history.py --self-test
           python -m unittest discover -s tests -p 'test_v30_improvements.py'
           python -m unittest discover -s tests -p 'test_v31_isolated_race_errors.py'
+          python -m unittest discover -s tests -p 'test_v32_unattended_schedule.py'
           python tools/sl_source_audit.py data/racing_history.sqlite
           python tools/repair_surface.py --database data/racing_history.sqlite --apply
       - name: Collect one restartable batch
