@@ -9,6 +9,12 @@ on:
         type: choice
         options: [verify, collect]
         default: verify
+      date_order:
+        description: "Historical order (newest or oldest dates first)"
+        required: true
+        type: choice
+        options: [newest, oldest]
+        default: newest
   schedule:
     - cron: "27 3 * * *"
 
@@ -31,6 +37,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       COLLECTION_ENABLED: ${{ vars.SL_COLLECTION_ENABLED }}
       OPERATION: ${{ github.event_name == 'schedule' && 'collect' || inputs.operation }}
+      DATE_ORDER: ${{ inputs.date_order || 'newest' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,7 +68,9 @@ jobs:
       - name: Validate collected source and parser
         run: |
           python src/sl_history.py --self-test
+          python -m unittest discover -s tests -p 'test_v30_improvements.py'
           python tools/sl_source_audit.py data/racing_history.sqlite
+          python tools/repair_surface.py --database data/racing_history.sqlite --apply
       - name: Collect one restartable batch
         id: collect
         shell: bash
@@ -78,7 +87,8 @@ jobs:
           set +e
           python src/backfill_controller.py \
             --mode full --start 2022-01-01 --end 2026-10-31 \
-            --batches 6 --batch-races 20 --delay 6 \
+            --batches 12 --batch-races 20 --delay 6 \
+            --date-order "$DATE_ORDER" \
             --database data/racing_history.sqlite
           code=$?
           set -e
@@ -90,6 +100,7 @@ jobs:
           if [[ -f data/racing_history.sqlite ]]; then
             python src/sl_history.py --export-only --database data/racing_history.sqlite --output-dir data/exports
             python tools/progress_report.py
+            python tools/qa_diagnostics.py --database data/racing_history.sqlite --output-dir data/exports
             python tools/sl_source_audit.py data/racing_history.sqlite
           fi
       - name: Store SQLite checkpoint as private Release asset
