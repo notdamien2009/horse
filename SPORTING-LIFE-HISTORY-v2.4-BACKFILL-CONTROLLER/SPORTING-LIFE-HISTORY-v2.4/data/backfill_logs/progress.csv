@@ -1,0 +1,7 @@
+timestamp_utc,batch,action,races,dates_indexed,pending,race_errors,date_errors,qa_review,critical
+2026-10-22T20:31:59+00:00,1,completed,20,1,17,0,0,8,2
+2026-10-22T21:06:55+00:00,0,existing_qa_failure,20,1,17,0,0,8,2
+2026-10-22T21:07:33+00:00,0,existing_qa_failure,20,1,17,0,0,8,2
+2026-10-22T21:07:40+00:00,0,existing_qa_failure,20,1,17,0,0,8,2
+2026-11-01T14:33:50+00:00,0,existing_qa_failure,20,1,17,0,0,8,2
+2026-11-01T14:34:27+00:00,0,existing_qa_failure,20,1,17,0,0,8,2

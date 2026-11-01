@@ -1,0 +1,34 @@
+
+== 2026-10-22T20:29:47.195221+00:00 batch 1 ==
+NOTICE: Sporting Life prohibits scraping; use HTTP mode only with permission.
+2026-10-21: indexed 37 race links
+  13:50 Newmarket        944562: 8 finishers, time=88.36, QA=review
+  14:25 Newmarket        944563: 5 finishers, time=87.12, QA=review
+  15:00 Newmarket        944564: 8 finishers, time=130.74, QA=parsed_not_verified
+  15:35 Newmarket        944565: 7 finishers, time=129.21, QA=review
+  16:10 Newmarket        944566: 5 finishers, time=101.37, QA=parsed_not_verified
+  16:45 Newmarket        944567: 5 finishers, time=103.81, QA=parsed_not_verified
+  17:20 Newmarket        944568: 17 finishers, time=89.0, QA=review
+  13:57 Fontwell         944569: 13 finishers, time=295.8, QA=parsed_not_verified
+  14:32 Fontwell         944570: 5 finishers, time=300.5, QA=review
+  15:07 Fontwell         944571: 6 finishers, time=304.8, QA=parsed_not_verified
+  15:42 Fontwell         944572: 7 finishers, time=301.5, QA=parsed_not_verified
+  16:17 Fontwell         944573: 8 finishers, time=436.5, QA=parsed_not_verified
+  16:50 Fontwell         944574: 8 finishers, time=352.5, QA=review
+  13:10 Worcester        945138: 9 finishers, time=250.38, QA=parsed_not_verified
+  13:40 Worcester        944575: 6 finishers, time=319.15, QA=parsed_not_verified
+  14:15 Worcester        944576: 7 finishers, time=248.2, QA=parsed_not_verified
+  14:50 Worcester        944577: 10 finishers, time=246.66, QA=review
+  15:25 Worcester        944578: 10 finishers, time=243.87, QA=parsed_not_verified
+  16:00 Worcester        944579: 8 finishers, time=249.3, QA=parsed_not_verified
+  16:35 Worcester        944580: 10 finishers, time=317.1, QA=review
+Database: C:\Users\PC Deals\Desktop\Speeds\SPORTING-LIFE-HISTORY-v2.4-BACKFILL-CONTROLLER\SPORTING-LIFE-HISTORY-v2.4\data\racing_history.sqlite
+Exports: C:\Users\PC Deals\Desktop\Speeds\SPORTING-LIFE-HISTORY-v2.4-BACKFILL-CONTROLLER\SPORTING-LIFE-HISTORY-v2.4\data\exports (automatic CSV export skipped on large collections)
+Summary: {
+  "race_pages_parsed": 20,
+  "runner_records": 162,
+  "dates_indexed": 1,
+  "race_pages_pending": 17,
+  "race_pages_with_errors": 0,
+  "csv_export": "Run --export-only for current full CSV files"
+}
