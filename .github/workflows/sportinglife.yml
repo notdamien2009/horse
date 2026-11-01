@@ -1,0 +1,123 @@
+name: Sporting Life private archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Verify existing database or collect the next checkpoint"
+        required: true
+        type: choice
+        options: [verify, collect]
+        default: verify
+  schedule:
+    - cron: "27 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sporting-life-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    # Never publish racing content to the public repository.
+    if: ${{ github.event.repository.private == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      COLLECTION_ENABLED: ${{ vars.SL_COLLECTION_ENABLED }}
+      OPERATION: ${{ github.event_name == 'schedule' && 'collect' || inputs.operation }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify project files
+        run: |
+          set -euo pipefail
+          test -f src/sl_history.py || { echo 'Missing collector source: install the project code.'; exit 2; }
+          test -f src/backfill_controller.py || { echo 'Missing resumable controller.'; exit 2; }
+          test -f tools/sl_checkpoint.py || { echo 'Missing database checkpoint tool.'; exit 2; }
+          python -m pip install -r src/requirements.txt
+      - name: Restore last checkpoint; never silently start a second archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data
+          if gh release view sl-database-checkpoint >/dev/null 2>&1; then
+            gh release download sl-database-checkpoint --pattern 'racing_history.sqlite.gz' --dir /tmp --clobber
+            python tools/sl_checkpoint.py restore data/racing_history.sqlite /tmp/racing_history.sqlite.gz
+          elif [[ -f seed/racing_history.sqlite ]]; then
+            cp seed/racing_history.sqlite data/racing_history.sqlite
+            python tools/sl_checkpoint.py verify data/racing_history.sqlite
+          else
+            echo 'No database: add a seed only AFTER making the repository private.'
+            exit 3
+          fi
+      - name: Validate collected source and parser
+        run: |
+          python src/sl_history.py --self-test
+          python tools/sl_source_audit.py data/racing_history.sqlite
+      - name: Collect one restartable batch
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$OPERATION" != "collect" ]]; then
+            echo 'Verification only: no website requests.'
+            exit 0
+          fi
+          if [[ "$COLLECTION_ENABLED" != 'true' ]]; then
+            echo 'Source access not enabled. Set SL_COLLECTION_ENABLED only after obtaining permission.'
+            exit 4
+          fi
+          set +e
+          python src/backfill_controller.py \
+            --mode full --start 2022-01-01 --end 2026-10-31 \
+            --batches 6 --batch-races 20 --delay 6 \
+            --database data/racing_history.sqlite
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "Collector exit code: $code"
+      - name: Export latest data and coverage
+        if: always()
+        run: |
+          if [[ -f data/racing_history.sqlite ]]; then
+            python src/sl_history.py --export-only --database data/racing_history.sqlite --output-dir data/exports
+            python tools/progress_report.py
+            python tools/sl_source_audit.py data/racing_history.sqlite
+          fi
+      - name: Store SQLite checkpoint as private Release asset
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f data/racing_history.sqlite ]]; then exit 0; fi
+          python tools/sl_checkpoint.py save data/racing_history.sqlite /tmp/racing_history.sqlite.gz
+          if ! gh release view sl-database-checkpoint >/dev/null 2>&1; then
+            gh release create sl-database-checkpoint --title 'Private racing database checkpoint' \
+              --notes 'Resumable data checkpoint. No public redistribution.' --prerelease
+          fi
+          gh release upload sl-database-checkpoint /tmp/racing_history.sqlite.gz --clobber
+      - name: Downloadable QA and exports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sportinglife-results-${{ github.run_id }}
+          path: |
+            data/exports/*.csv
+            data/exports/*.json
+            data/backfill_logs/*.csv
+            data/backfill_logs/run.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Signal collection failure
+        if: always() && steps.collect.outputs.exit_code != '' && steps.collect.outputs.exit_code != '0'
+        run: |
+          echo 'Collector stopped due to errors/QA/access restrictions. Check artifacts; prior checkpoint retained.'
+          exit 1
