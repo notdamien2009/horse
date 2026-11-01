@@ -15,10 +15,12 @@ on:
         type: choice
         options: [newest, oldest]
         default: newest
-  # Private repository: one daily checkpointed run (03:27 UTC).
-  # Never schedule live collection unless separately enabled and authorised.
+  # Daily fallback at 03:27 UTC, or opt-in half-hour runs at :17/:47 UTC.
+  # Half-hour mode replaces, rather than supplements, the daily run.
+  # Access permission and spend controls remain the repository owner's responsibility.
   schedule:
     - cron: "27 3 * * *"
+    - cron: "17,47 * * * *"
 
 permissions:
   contents: read
@@ -30,7 +32,17 @@ concurrency:
 jobs:
   archive:
     # Never publish racing content to the public repository.
-    if: ${{ github.event.repository.private == true && (github.event_name != 'schedule' || (vars.SL_SCHEDULE_ENABLED == 'true' && vars.SL_COLLECTION_ENABLED == 'true')) }}
+    # Require explicit opt-in for expensive half-hour mode; never run two
+    # schedules at once. Manual dispatch remains independent.
+    if: >-
+      ${{ github.event.repository.private == true &&
+          (github.event_name != 'schedule' ||
+           (vars.SL_COLLECTION_ENABLED == 'true' &&
+            ((github.event.schedule == '27 3 * * *' &&
+              vars.SL_SCHEDULE_ENABLED == 'true' &&
+              vars.SL_HALFHOURLY_ENABLED != 'true') ||
+             (github.event.schedule == '17,47 * * * *' &&
+              vars.SL_HALFHOURLY_ENABLED == 'true')))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -40,6 +52,7 @@ jobs:
       COLLECTION_ENABLED: ${{ vars.SL_COLLECTION_ENABLED }}
       OPERATION: ${{ github.event_name == 'schedule' && 'collect' || inputs.operation }}
       DATE_ORDER: ${{ github.event_name == 'schedule' && 'oldest' || inputs.date_order || 'newest' }}
+      RUN_BUDGET_MINUTES: ${{ github.event.schedule == '17,47 * * * *' && '18' || '48' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -92,7 +105,7 @@ jobs:
           python src/backfill_controller.py \
             --mode full --start 2022-01-01 --end 2026-10-31 \
             --batches 36 --batch-races 20 --delay 6 \
-            --max-runtime-minutes 48 \
+            --max-runtime-minutes "$RUN_BUDGET_MINUTES" \
             --date-order "$DATE_ORDER" \
             --database data/racing_history.sqlite
           code=$?
