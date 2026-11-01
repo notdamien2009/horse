@@ -1,0 +1,29 @@
+name: Collector code regression tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tools/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser dependencies
+        run: python -m pip install -r src/requirements.txt
+      - name: Test parser and calculation rules (offline)
+        run: python src/sl_history.py --self-test
+      - name: Test surface inference, repair and QA reports (offline)
+        run: python -m unittest discover -s tests -p 'test_v30_improvements.py' -v
