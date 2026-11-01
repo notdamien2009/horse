@@ -19,11 +19,14 @@ from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
 CODE = Path(__file__).resolve().parent
+# These trigger SYSTEMIC collection stops, not standards suitability.
+# Preserve all the original race-level flags and quarantine. Missing going,
+# surface, comments or unconverted margins must still be reviewed before
+# speed-standard use, but should not halt the entire historical archive.
 CRITICAL = {
-    'invalid_or_missing_winning_time', 'invalid_distance', 'missing_going',
-    'missing_surface', 'no_finishers_parsed', 'runner_count_mismatch',
+    'invalid_or_missing_winning_time', 'invalid_distance',
+    'no_finishers_parsed', 'runner_count_mismatch',
     'finish_order_gap_or_duplicate', 'duplicate_horse_in_race',
-    'not_confirmed_weighed_in', 'missing_running_comments',
     'non_runner_text_only_not_captured', 'non_runner_unclosed_record',
     'no_runner_rows_recognised',
 }
