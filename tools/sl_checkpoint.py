@@ -43,8 +43,10 @@ def restore(archive,db):
             old_count=verify(db)
             if new_count<old_count:
                 raise RuntimeError(f'Refusing to replace {old_count} races with only {new_count}')
-        if db.exists():db.unlink()
-        db.write_bytes(candidate.read_bytes())
+        staged = db.with_name(db.name + '.restore-tmp')
+        import shutil
+        shutil.copyfile(candidate, staged)
+        os.replace(staged, db)
     print(f'Restored {new_count} races to {db}')
 
 if __name__=='__main__':
@@ -55,4 +57,4 @@ if __name__=='__main__':
     args=p.parse_args()
     if args.mode=='verify':print('Verified races:',verify(args.database))
     elif args.mode=='save':save(args.database,args.archive)
-    else:restore(args.archive,args.database)
+    else:restore(args.database,args.archive)
