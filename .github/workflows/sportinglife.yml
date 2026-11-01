@@ -50,7 +50,7 @@ jobs:
           mkdir -p data
           if gh release view sl-database-checkpoint >/dev/null 2>&1; then
             gh release download sl-database-checkpoint --pattern 'racing_history.sqlite.gz' --dir /tmp --clobber
-            python tools/sl_checkpoint.py restore /tmp/racing_history.sqlite.gz data/racing_history.sqlite
+            python tools/sl_checkpoint.py restore data/racing_history.sqlite /tmp/racing_history.sqlite.gz
           elif [[ -f seed/racing_history.sqlite ]]; then
             cp seed/racing_history.sqlite data/racing_history.sqlite
             python tools/sl_checkpoint.py verify data/racing_history.sqlite
