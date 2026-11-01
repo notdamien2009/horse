@@ -18,7 +18,9 @@ class DailyScheduleTests(unittest.TestCase):
         self.assertIn("vars.SL_SCHEDULE_ENABLED == 'true'",w)
         self.assertIn("vars.SL_COLLECTION_ENABLED == 'true'",w)
         self.assertIn("github.event_name == 'schedule' && 'oldest'",w)
-        self.assertIn('--max-runtime-minutes 48',w)
+        # Daily/manual 48-minute budget remains; half-hour jobs use 18.
+        self.assertIn("github.event.schedule == '17,47 * * * *' && '18' || '48'",w)
+        self.assertIn('--max-runtime-minutes "$RUN_BUDGET_MINUTES"',w)
         self.assertIn('--batches 36',w)
         self.assertIn('--delay 6',w)
         self.assertIn('racing_history.previous.sqlite.gz',w)
