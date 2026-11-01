@@ -29,3 +29,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_v30_improvements.py' -v
       - name: Test isolated page failure recovery (offline)
         run: python -m unittest discover -s tests -p 'test_v31_isolated_race_errors.py' -v
+      - name: Test scheduled workflow safeguards (offline)
+        run: python -m unittest discover -s tests -p 'test_v32_unattended_schedule.py' -v
