@@ -489,15 +489,32 @@ def collect_with_connection(args, conn):
                 print(f'  {item["listed_time"] or "--:--"} {r["track"]:<16} {r["race_id"]}: '
                       f'{len(runners)} horse records, time={r["winning_time_seconds"]}, '
                       f'QA={r["qa_status"]}')
-            except (AccessStopped,RuntimeError) as err:
-                fail_race(conn,item['race_id'],err)
+            except (AccessStopped,RuntimeError,requests.RequestException) as err:
+                # Access and transport problems are NOT ordinary malformed races.
+                # Preserve the failure and stop rather than silently continuing.
+                fail_race(conn,item['race_id'],f'ACCESS_OR_TRANSPORT_ERROR: {err}')
                 print(f'STOP {item["race_id"]}: {err}',file=sys.stderr)
                 stopped=True
                 break
-            except (Exception,) as err:
-                fail_race(conn,item['race_id'],err)
-                fetched+=1
-                print(f'RACE ERROR {item["race_id"]}: {err}',file=sys.stderr)
+            except ValueError as err:
+                # One incomplete/exceptional result must not stop every other
+                # race in 2022-2026. Keep it queued as ERROR for explicit repair.
+                if str(err) == 'Race extraction incomplete, check page and recorded details':
+                    fail_race(conn,item['race_id'],f'PARSE_INCOMPLETE: {err}')
+                    fetched+=1
+                    print(f'RACE FOR REVIEW {item["race_id"]}: {err}',file=sys.stderr)
+                else:
+                    fail_race(conn,item['race_id'],f'UNEXPECTED_VALUE_ERROR: {err}')
+                    print(f'STOP {item["race_id"]}: {err}',file=sys.stderr)
+                    stopped=True
+                    break
+            except Exception as err:
+                # Unknown programming/runtime faults must not be mislabelled as
+                # isolated horse-race failures.
+                fail_race(conn,item['race_id'],f'UNEXPECTED_ERROR: {type(err).__name__}: {err}')
+                print(f'STOP {item["race_id"]}: {type(err).__name__}: {err}',file=sys.stderr)
+                stopped=True
+                break
             if args.live and not stopped:
                 time.sleep(args.delay)
     number_of_races=conn.execute('SELECT COUNT(*) FROM races').fetchone()[0]
