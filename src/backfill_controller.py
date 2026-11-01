@@ -23,6 +23,8 @@ CODE = Path(__file__).resolve().parent
 # Preserve all the original race-level flags and quarantine. Missing going,
 # surface, comments or unconverted margins must still be reviewed before
 # speed-standard use, but should not halt the entire historical archive.
+# Structural failures stop collection. Standards-only gaps remain flagged
+# and quarantined without halting the historical archive.
 CRITICAL = {
     'invalid_or_missing_winning_time', 'invalid_distance',
     'no_finishers_parsed', 'runner_count_mismatch',
@@ -154,6 +156,7 @@ def run(args):
         cmd=[sys.executable,str(CODE/'sl_history.py')]
         cmd += ['--html-dir',str((BASE/args.offline_dir).resolve())] if args.offline_dir else ['--live']
         cmd += ['--from-date',args.start,'--to-date',args.end,
+                '--date-order',args.date_order,
                 '--max-days','1','--max-races',str(args.batch_races),
                 '--delay',str(args.delay),'--database',str(db),
                 '--auto-export-limit','0','--output-dir',str((BASE/args.exports).resolve())]
@@ -220,6 +223,7 @@ def main():
     p.add_argument('--batches',type=int,default=3)
     p.add_argument('--batch-races',type=int,default=20)
     p.add_argument('--delay',type=float,default=6.0)
+    p.add_argument('--date-order',choices=('newest','oldest'),default='newest')
     p.add_argument('--offline-dir',default=None)
     p.add_argument('--database',default='data/racing_history.sqlite')
     p.add_argument('--logs',default='data/backfill_logs')
