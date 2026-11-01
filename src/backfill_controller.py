@@ -86,13 +86,35 @@ def sync_qa(conn):
                 critical_ids=[x[0] for x in new if x[4]][:20])
 
 
+def is_isolated_parse_error(message):
+    """Only known incomplete race pages may be quarantined without stopping.
+
+    Old v3.0 databases store an unprefixed message, so recognise both forms.
+    Unknown, access and transport errors must always stop collection.
+    """
+    message = str(message or '')
+    legacy = 'Race extraction incomplete, check page and recorded details'
+    return message == legacy or message == 'PARSE_INCOMPLETE: ' + legacy
+
+
+def error_counts(conn,start,end):
+    rows = conn.execute(
+        "SELECT last_error FROM race_queue WHERE race_date BETWEEN ? AND ? "
+        "AND status='error'", (start,end)).fetchall()
+    isolated = sum(is_isolated_parse_error(row[0]) for row in rows)
+    return isolated, len(rows)-isolated
+
+
 def snapshot(conn,start,end):
     def count(query):return conn.execute(query,(start,end)).fetchone()[0]
+    isolated_errors, blocking_errors = error_counts(conn,start,end)
     return {
       'parsed':count('SELECT count(*) FROM races WHERE race_date BETWEEN ? AND ?'),
       'indexed':count("SELECT count(*) FROM days WHERE race_date BETWEEN ? AND ? AND index_state='indexed'"),
       'index_errors':count("SELECT count(*) FROM days WHERE race_date BETWEEN ? AND ? AND index_state='error'"),
       'queue_errors':count("SELECT count(*) FROM race_queue WHERE race_date BETWEEN ? AND ? AND status='error'"),
+      'isolated_parse_errors':isolated_errors,
+      'blocking_queue_errors':blocking_errors,
       'pending':count("SELECT count(*) FROM race_queue WHERE race_date BETWEEN ? AND ? AND status='pending'"),
       'reviewed':count("SELECT count(*) FROM backfill_qa_register WHERE race_date BETWEEN ? AND ? AND qa_status='review'"),
       'critical':count("SELECT count(*) FROM backfill_qa_register WHERE race_date BETWEEN ? AND ? AND critical_flags != ''"),
@@ -111,6 +133,21 @@ def quarantine(conn,output,start,end):
             AND (critical_flags != '' OR qa_status='review')
             ORDER BY race_date,race_id''',(start,end)):
             w.writerow(tuple(r))
+
+
+def export_queue_errors(conn,output,start,end):
+    """Visible failures, never marked parsed or counted as date complete."""
+    output.parent.mkdir(parents=True,exist_ok=True)
+    with output.open('w',encoding='utf-8-sig',newline='') as f:
+        w=csv.writer(f)
+        w.writerow(['race_date','race_id','track','status','attempts',
+                    'failure_type','last_error','source_url'])
+        for row in conn.execute(
+            "SELECT race_date,race_id,track,status,attempts,last_error,url "
+            "FROM race_queue WHERE race_date BETWEEN ? AND ? AND status='error' "
+            "ORDER BY race_date,race_id", (start,end)):
+            kind='isolated_parse' if is_isolated_parse_error(row[5]) else 'blocking'
+            w.writerow([row[0],row[1],row[2],row[3],row[4],kind,row[5],row[6]])
 
 
 def record(logpath,batch,state,action,new_critical=0):
@@ -133,23 +170,31 @@ def run(args):
     logs=(BASE/args.logs).resolve(); logs.mkdir(parents=True,exist_ok=True)
     progress=logs/'progress_v25.csv'
     qa_file=logs/'quarantined_races.csv'
+    race_errors_file=logs/'failed_race_pages.csv'
     total_days=(date.fromisoformat(args.end)-date.fromisoformat(args.start)).days+1
     with closing(open_db(db)) as conn:
         initial_sync=sync_qa(conn)
         before=snapshot(conn,args.start,args.end)
         quarantine(conn,qa_file,args.start,args.end)
+        export_queue_errors(conn,race_errors_file,args.start,args.end)
     print(f'Date coverage: {args.start} to {args.end} (inclusive)')
     print(f'Existing archive: {before["parsed"]} races, {before["indexed"]} indexed dates, {before["pending"]} pending.')
     if before['critical']:
         print(f'QA QUARANTINE: {before["critical"]} existing races have critical flags; preserved, not approved for standards.')
         print(f'Review: {qa_file}')
-    if before['queue_errors'] or before['index_errors']:
-        print('STOP: existing collection errors require investigation (not automatically retried).')
-        record(progress,0,before,'existing_collection_error')
+    if before['blocking_queue_errors'] or before['index_errors']:
+        print('STOP: existing access/unknown collection errors or date-index errors '
+              'require investigation; no retries or bypasses.')
+        print(f'Review failed pages: {race_errors_file}')
+        record(progress,0,before,'existing_blocking_collection_error')
         return 4
+    if before['isolated_parse_errors']:
+        print(f'QA HOLD: {before["isolated_parse_errors"]} known incomplete race '
+              'page(s) remain unparsed for later manual repair.')
+        print(f'Review failed pages: {race_errors_file}')
     if args.mode=='check':
         record(progress,0,before,'check');return 0
-    if before['indexed']==total_days and before['pending']==0:
+    if before['indexed']==total_days and before['pending']==0 and before['queue_errors']==0:
         print('Dates indexed and queue cleared; independently validate fixture coverage.')
         return 0
     for batch in range(1,args.batches+1):
@@ -177,21 +222,28 @@ def run(args):
                 with closing(open_db(db)) as conn:
                     sync_qa(conn);after=snapshot(conn,args.start,args.end)
                     quarantine(conn,qa_file,args.start,args.end)
+                    export_queue_errors(conn,race_errors_file,args.start,args.end)
                 record(progress,batch,after,'interrupted');return 130
         with closing(open_db(db)) as conn:
             new=sync_qa(conn)
             after=snapshot(conn,args.start,args.end)
             quarantine(conn,qa_file,args.start,args.end)
+            export_queue_errors(conn,race_errors_file,args.start,args.end)
         new_count=max(0,after['parsed']-before['parsed'])
         new_critical=new['critical']
         record(progress,batch,after,'batch' if exitcode==0 else 'failure',new_critical)
         print(f'CHECKPOINT: {after["parsed"]} races, {after["indexed"]} indexed dates, '
               f'{after["pending"]} pending, {after["critical"]} quarantined critical flags '
               f'({new_critical} new).')
-        if exitcode or (after['queue_errors']+after['index_errors'] >
-                         before['queue_errors']+before['index_errors']):
-            print('STOP: transport/collection error. Inspect run.log; no access-control workarounds.')
+        if (exitcode or after['blocking_queue_errors']>before['blocking_queue_errors']
+                or after['index_errors']>before['index_errors']):
+            print('STOP: transport, access, unexpected code or date-index error. '
+                  'Inspect run.log and failed_race_pages.csv; no access-control workarounds.')
             return 2
+        new_isolated = after['isolated_parse_errors']-before['isolated_parse_errors']
+        if new_isolated:
+            print(f'QA HOLD: {new_isolated} additional incomplete race page(s) '
+                  f'quarantined. Review {race_errors_file}; continuing other races.')
         if args.mode=='pilot' and new['review']:
             print('STOP: pilot has new QA-review races; inspect quarantine before continuing.')
             return 6
@@ -202,11 +254,13 @@ def run(args):
             return 5
         if new_critical:
             print(f'QA: {new_critical} new race(s) quarantined for review: {new["critical_ids"]}')
-        if after['indexed']==total_days and after['pending']==0:
+        if after['indexed']==total_days and after['pending']==0 and after['queue_errors']==0:
             print('All days indexed, no pending races. Verify fixture coverage separately.')
             return 0
         # Some dates legitimately have fewer pages than the configured batch size.
-        made_progress = after['parsed']>before['parsed'] or after['indexed']>before['indexed']
+        made_progress = (after['parsed']>before['parsed'] or
+                         after['indexed']>before['indexed'] or
+                         after['isolated_parse_errors']>before['isolated_parse_errors'])
         if not made_progress:
             print('STOP: no progress. Inspect index and queue; not claiming completeness.')
             return 3
