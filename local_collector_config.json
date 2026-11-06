@@ -1,0 +1,11 @@
+{
+  "source_access_authorised": false,
+  "start_date": "2022-01-01",
+  "end_date": "2026-10-31",
+  "date_order": "oldest",
+  "batch_races": 20,
+  "request_delay_seconds": 6,
+  "rest_between_batches_seconds": 15,
+  "backup_interval_minutes": 30,
+  "keep_backups": 8
+}

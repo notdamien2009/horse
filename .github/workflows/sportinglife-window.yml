@@ -1,0 +1,181 @@
+name: Sporting Life windowed archive (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Inspect existing coverage, or collect with documented permission'
+        required: true
+        type: choice
+        options: [verify, collect]
+        default: verify
+      window_months:
+        description: 'Calendar months in each collection window'
+        required: true
+        type: choice
+        options: ['1', '3']
+        default: '1'
+      windows_per_run:
+        description: 'Max completed windows to advance this run (usually 1)'
+        required: true
+        type: number
+        default: 1
+      batch_count:
+        description: 'Max collector batches per window (each up to 20 races)'
+        required: true
+        type: number
+        default: 12
+
+permissions:
+  contents: read
+
+# This MUST match the existing sportinglife.yml concurrency group so two
+# jobs cannot concurrently restore/save the same private Release checkpoint.
+concurrency:
+  group: sporting-life-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    if: ${{ github.event.repository.private == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      COLLECTION_ENABLED: ${{ vars.SL_COLLECTION_ENABLED }}
+      OPERATION: ${{ inputs.operation }}
+      WINDOW_MONTHS: ${{ inputs.window_months }}
+      WINDOWS_PER_RUN: ${{ inputs.windows_per_run }}
+      BATCH_COUNT: ${{ inputs.batch_count }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies and verify required scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f src/sl_history.py
+          test -f src/backfill_controller.py
+          test -f tools/window_backfill.py
+          test -f tools/sl_checkpoint.py
+          python -m pip install -r src/requirements.txt
+
+      - name: Restore existing private checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data
+          if gh release view sl-database-checkpoint >/dev/null 2>&1; then
+            gh release download sl-database-checkpoint \
+              --pattern 'racing_history.sqlite.gz' --dir /tmp --clobber
+            python tools/sl_checkpoint.py restore \
+              data/racing_history.sqlite /tmp/racing_history.sqlite.gz
+          elif [[ -f seed/racing_history.sqlite ]]; then
+            cp seed/racing_history.sqlite data/racing_history.sqlite
+            python tools/sl_checkpoint.py verify data/racing_history.sqlite
+          else
+            echo 'STOP: No existing checkpoint; refusing to start a new archive.'
+            exit 3
+          fi
+
+      - name: Run offline regressions and source audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python src/sl_history.py --self-test
+          python -m unittest discover -s tests -p 'test_v30_improvements.py' -v
+          python -m unittest discover -s tests -p 'test_v31_isolated_race_errors.py' -v
+          python -m unittest discover -s tests -p 'test_v32_unattended_schedule.py' -v
+          python -m unittest discover -s tests -p 'test_window_backfill.py' -v
+          python tools/sl_source_audit.py data/racing_history.sqlite
+          python tools/repair_surface.py --database data/racing_history.sqlite --apply
+
+      - name: Run one or more checkpointed calendar windows
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$OPERATION" == 'collect' && "$COLLECTION_ENABLED" != 'true' ]]; then
+            echo 'STOP: Sporting Life collection requires documented permission.'
+            echo 'exit_code=4' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$OPERATION" == 'verify' ]]; then
+            python tools/window_backfill.py --mode status \
+              --months "$WINDOW_MONTHS" --start 2022-01-01 --end 2026-10-31
+            echo 'exit_code=0' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          set +e
+          SL_COLLECTION_ENABLED=true python tools/window_backfill.py \
+            --mode collect --months "$WINDOW_MONTHS" \
+            --windows "$WINDOWS_PER_RUN" \
+            --batches "$BATCH_COUNT" --batch-races 20 --delay 6 \
+            --max-runtime-minutes 40 \
+            --start 2022-01-01 --end 2026-10-31 \
+            --database data/racing_history.sqlite
+          code=$?
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "Collector exit code: $code"
+
+      - name: Export database and QA reports
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f data/racing_history.sqlite ]]; then
+            python src/sl_history.py --export-only \
+              --database data/racing_history.sqlite --output-dir data/exports
+            python tools/progress_report.py
+            python tools/qa_diagnostics.py --database data/racing_history.sqlite \
+              --output-dir data/exports
+            python tools/sl_source_audit.py data/racing_history.sqlite
+          fi
+
+      - name: Save checkpoint with one previous-version rollback
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f data/racing_history.sqlite ]]; then exit 0; fi
+          python tools/sl_checkpoint.py save \
+            data/racing_history.sqlite /tmp/racing_history.sqlite.new.gz
+          if ! gh release view sl-database-checkpoint >/dev/null 2>&1; then
+            gh release create sl-database-checkpoint \
+              --title 'Private racing database checkpoint' \
+              --notes 'Resumable private archive; not for redistribution.' --prerelease
+          fi
+          if [[ -f /tmp/racing_history.sqlite.gz ]]; then
+            cp /tmp/racing_history.sqlite.gz /tmp/racing_history.previous.sqlite.gz
+            gh release upload sl-database-checkpoint \
+              /tmp/racing_history.previous.sqlite.gz --clobber
+          fi
+          cp /tmp/racing_history.sqlite.new.gz /tmp/racing_history.sqlite.gz
+          gh release upload sl-database-checkpoint \
+            /tmp/racing_history.sqlite.gz --clobber
+
+      - name: Downloadable exports, coverage and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sportinglife-window-${{ github.run_id }}
+          path: |
+            data/exports/**/*.csv
+            data/exports/**/*.json
+            data/exports/*.csv
+            data/exports/*.json
+            data/backfill_logs/**/*.csv
+            data/backfill_logs/**/*.json
+            data/backfill_logs/**/*.log
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Report blocked collection
+        if: always() && steps.collect.outputs.exit_code != '' && steps.collect.outputs.exit_code != '0'
+        run: |
+          echo 'Collection blocked by source permission, transport or QA. The SQLite checkpoint is retained.'
+          exit 1
