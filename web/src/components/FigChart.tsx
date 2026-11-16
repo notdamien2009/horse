@@ -55,8 +55,8 @@ const posCls = (p: string) => (p === "1" ? "p-win" : p === "2" || p === "3" ? "p
 const goingTxt = (g: string | null) => String(g ?? "").replace(/\s*\(.*\)/, "");
 
 const DIMS = {
-  sm: { W: 380, H: 112, L: 8, R: 40, T: 14, B: 18, r: 4.4 },
-  lg: { W: 960, H: 250, L: 40, R: 64, T: 20, B: 46, r: 6 },
+  sm: { W: 380, H: 122, L: 8, R: 40, T: 24, B: 18, r: 4.4 },
+  lg: { W: 960, H: 260, L: 40, R: 64, T: 30, B: 46, r: 6 },
 };
 
 export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size = "sm", trend }: {
@@ -133,13 +133,24 @@ export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size =
         )}
         {pts.map((p, i) => {
           const cx = x(i);
+          const pos = p.pos || "–";
+          const posGap = size === "lg" ? 11 : 8;
           if (p.v == null) {
-            return <circle key={`p${i}`} cx={cx} cy={base} r={D.r - 0.6} className={`fc-nofig ${posCls(p.pos)}`} />;
+            const r = D.r - 0.6;
+            return (
+              <g key={`p${i}`}>
+                <circle cx={cx} cy={base} r={r} className={`fc-nofig ${posCls(p.pos)}`} />
+                <text x={cx} y={base - r - posGap} textAnchor="middle" className={`fc-pos fc-pos-dot ${posCls(p.pos)}`}>{pos}</text>
+              </g>
+            );
           }
           const cy = y(p.v), r = i === lastI ? D.r + 1.6 : D.r;
           const st = hueStyle(hue(p.v));
           const unsure = p.pace && p.pace.figRel !== "ok";
           const paceCls = p.pace && p.pace.label !== "unknown" ? ` pace-${p.pace.label}` : "";
+          // Position sits centred just above the (ringed) dot. The last-run figure
+          // stays to the left of the dot so the two labels do not overlap.
+          const top = p.fit.all ? r + 3.6 : r;
           return (
             <g key={`p${i}`} className={hov === i ? "fc-hov" : undefined}>
               {p.fit.all && <circle cx={cx} cy={cy} r={r + 3.6} className="fc-ring" />}
@@ -147,8 +158,9 @@ export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size =
                 ? <circle cx={cx} cy={cy} r={r} className={`fc-dot${unsure ? " unsure" : ""}${paceCls}`} style={st} />
                 : <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} transform={`rotate(45 ${cx} ${cy})`} className={`fc-dot other${unsure ? " unsure" : ""}${paceCls}`} style={st} />}
               {unsure && <circle cx={cx} cy={cy + r + 3.2} r={1.7} className={`fc-pace ${p.pace!.figRel} ${p.pace!.label}`} />}
+              <text x={cx} y={cy - top - posGap} textAnchor="middle" className={`fc-pos fc-pos-dot ${posCls(p.pos)}`}>{pos}</text>
               {i === lastI && (
-                <text x={cx - r - (p.fit.all ? 8 : 5)} y={cy - r - 1} textAnchor="end" className="fc-last heat" style={st}>{f0(p.v)}</text>
+                <text x={cx - r - (p.fit.all ? 8 : 5)} y={cy + 4} textAnchor="end" className="fc-last heat" style={st}>{f0(p.v)}</text>
               )}
             </g>
           );
