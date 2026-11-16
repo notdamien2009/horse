@@ -1,6 +1,6 @@
 import "server-only";
 import {
-  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate,
+  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate,
   type Row,
 } from "./store";
 import { bundledPayload, parsePayload, predictFromFigs, storedPreds, type Pred, type PredPayload } from "./predict";
@@ -12,6 +12,14 @@ export type Ratings = {
   last: number | null; best: number | null; best3: number | null; avg3: number | null;
   best2yo: number | null; best3_2yo: number | null; nfigs: number; family_used: "jumps" | "flat";
 };
+export type PaceInfo = {
+  label: "true" | "steady" | "slow" | "unknown";
+  figRel: "ok" | "low" | "suspect";
+  reason: string;
+  source: string;
+  fsp: number | null;
+  fieldDef: number | null;
+};
 export type FormRun = {
   date: string; course: string; dist: string; going: string; cls: string; type: string; pos: string;
   ran: number | null; btn: number | null; sp: string | null; or: number | null; fig: number | null;
@@ -20,6 +28,7 @@ export type FormRun = {
   code: string; dist_f: number | null; going_n: number | null; aw: boolean; cls_n: number | null;
   /** how that run compares with today's race (cls null = class unknown) */
   fit: Fit;
+  pace: PaceInfo | null;
 };
 export type Fit = { code: boolean; dist: boolean; going: boolean; cls: boolean | null; all: boolean };
 export type Conditions = { code: string; dist_f: number | null; going_n: number | null; aw: boolean; cls_n: number | null };
@@ -214,7 +223,7 @@ function buildForm(prev: Row[], figs: Row[], today: Conditions): FormRun[] {
       date: p.date, course: p.course, dist: p.distance, going: p.going, cls: p.race_class ?? "",
       type: titleCase(p.run_type ?? "").replace("N_h_flat", "NH Flat"),
       pos, ran: p.runners, btn: f?.beaten ?? null, sp: p.odds, or: p.bha, fig: f?.fig ?? null,
-      fig2: f?.fig2 ?? null, comment: p.comment, matched: !!f, ...c, fit: fit(c, today),
+      fig2: f?.fig2 ?? null, comment: p.comment, matched: !!f, ...c, fit: fit(c, today), pace: null,
     });
   }
   const oldest = out.length ? out[out.length - 1].date : "9999";
@@ -227,7 +236,7 @@ function buildForm(prev: Row[], figs: Row[], today: Conditions): FormRun[] {
     out.push({
       date: f.date, course: String(f.course ?? "").replace(/\s*\((IRE|FR|GB|USA)\)$/, ""), dist: f.dist, going: f.going, cls: cls(f.cls), type: f.code ?? "",
       pos: f.pos == null ? "" : String(f.pos), ran: f.ran, btn: f.beaten, sp: null, or: int(f.offr), fig: f.fig,
-      fig2: f.fig2 ?? null, comment: null, matched: true, ...c, fit: fit(c, today),
+      fig2: f.fig2 ?? null, comment: null, matched: true, ...c, fit: fit(c, today), pace: null,
     });
   }
   return out;
@@ -265,6 +274,88 @@ export function orChange(form: FormRun[], todayOr: number | null, todayCode: str
   return d === 0 ? null : d;
 }
 
+
+
+
+/** 'Fontwell Park' / 'Fontwell', 'Market Rasen' / 'MarketRasen' -> same key as the pace table. */
+export function normCourse(name: string | null | undefined): string {
+  const n = String(name ?? "").toLowerCase().replace(/\(.*?\)/g, " ");
+  return n.split(/[^a-z]+/).filter((w) => w && !["park", "the", "downs", "city", "racecourse", "aw"].includes(w)).join("");
+}
+
+const SLOW_CMT = /slowly[\s-]?run|sedate(?:ly)?(?:\s+run|\s+pace)?|false pace|no pace|lack of pace|crawled|crawling early|steadily[\s-]?run|steady(?:ish)? pace|dictated (?:a |the )?(?:slow |steady )?pace|set (?:a |the )?modest pace|uncontested (?:lead|pace)/i;
+const KEEN_CMT = /keen hold|pulled hard|took a keen hold|took keen hold|racing keenly|ran too freely|too freely/i;
+const SPRINT_CMT = /sprint finish|turned into a sprint/i;
+
+/** Weak fallback from the in-running comment, used only when we have no precomputed pace. */
+export function commentPace(comment: string | null | undefined): PaceInfo | null {
+  const s = String(comment ?? "");
+  if (!s) return null;
+  const slow = SLOW_CMT.test(s), keen = KEEN_CMT.test(s), sprint = SPRINT_CMT.test(s);
+  if (!slow && !keen && !sprint) return null;
+  const hardSlow = slow && /slowly|false pace|crawl|sedate|no pace|lack of pace/i.test(s);
+  const label: PaceInfo["label"] = hardSlow || sprint ? "slow" : "steady";
+  const figRel: PaceInfo["figRel"] = hardSlow || sprint ? "low" : "ok";
+  const reason = hardSlow ? "Comment suggests a slowly run race"
+    : sprint ? "Comment mentions a sprint finish"
+    : slow ? "Comment suggests a steadily run race"
+    : "Comment suggests a keen / pulling horse (often a slow pace)";
+  return { label, figRel, reason, source: "comments", fsp: null, fieldDef: null };
+}
+
+function rowToPace(r: Row): PaceInfo {
+  const label = r.label === "slow" || r.label === "steady" || r.label === "true" ? r.label : "unknown";
+  const figRel = r.fig_rel === "low" || r.fig_rel === "suspect" ? r.fig_rel : "ok";
+  return {
+    label, figRel,
+    reason: String(r.reason ?? ""),
+    source: String(r.source ?? ""),
+    fsp: r.fsp != null && Number.isFinite(Number(r.fsp)) ? Number(r.fsp) : null,
+    fieldDef: r.field_def != null && Number.isFinite(Number(r.field_def)) ? Number(r.field_def) : null,
+  };
+}
+
+function matchPace(run: FormRun, horseNorm: string, list: Row[]): PaceInfo | null {
+  const cn = normCourse(run.course);
+  const day = list.filter((r) => String(r.date).slice(0, 10) === run.date && r.course_norm === cn);
+  const pickFrom = (rows: Row[]): Row | null => {
+    let pick = rows;
+    if (pick.length > 1 && run.dist_f != null) {
+      const close = pick.filter((r) => r.dist_f != null && Math.abs(Number(r.dist_f) - run.dist_f!) <= 0.6);
+      if (close.length) pick = close;
+    }
+    if (pick.length > 1 && run.code) {
+      const same = pick.filter((r) => r.code === run.code);
+      if (same.length) pick = same;
+    }
+    return pick[0] ?? null;
+  };
+  const byHorse = horseNorm ? day.filter((r) => String(r.horses ?? "").split(",").includes(horseNorm)) : [];
+  const hit = pickFrom(byHorse.length ? byHorse : day);
+  const cmt = commentPace(run.comment);
+  if (!hit) return cmt;
+  const p = rowToPace(hit);
+  if (p.label === "unknown") return cmt;
+  if (cmt && (cmt.label === "slow" || cmt.label === "steady") && p.reason && !/comment/i.test(p.reason)) {
+    p.reason = `${p.reason}. ${cmt.reason}`;
+  }
+  return p;
+}
+
+function attachPace(race: Race, rows: Row[]): void {
+  for (const h of race.runners) {
+    const norm = String(h.horse_norm ?? "");
+    for (const f of h.form_runs) f.pace = matchPace(f, norm, rows);
+  }
+}
+
+async function withPace(races: Race[]): Promise<Race[]> {
+  const dates = [...new Set(races.flatMap((r) => r.runners.flatMap((h) => h.form_runs.map((f) => f.date))))];
+  let rows: Row[] = [];
+  try { rows = await qPace(dates); } catch { rows = []; }
+  for (const r of races) attachPace(r, rows);
+  return races;
+}
 
 type PredCtx = { payload: PredPayload | null; stored: Map<number, Pred> };
 
@@ -364,7 +455,9 @@ export async function race(raceId: number): Promise<Race | null> {
   const norms = [...new Set(runners.map((h) => h.horse_norm).filter(Boolean))];
   const figs = await qFigs(norms, r.date);
   const ctx = await loadPredContext(String(r.date));
-  return decorateRace(r, runners, groupPrev(prev), groupFigs(figs), ctx);
+  const race = decorateRace(r, runners, groupPrev(prev), groupFigs(figs), ctx);
+  await withPace([race]);
+  return race;
 }
 
 /** All races on a date, with runners/form/figures, in as few store reads as possible. */
@@ -384,9 +477,11 @@ export async function racesOn(date: string): Promise<Race[]> {
     list.push(h);
     byRace.set(h.race_id, list);
   }
-  return full
+  const out = full
     .sort((a, b) => String(a.time).localeCompare(String(b.time)))
     .map((r) => decorateRace(r, (byRace.get(r.race_id) ?? []).slice(), prevBy, figsBy, ctx));
+  await withPace(out);
+  return out;
 }
 
 export { cacheVersion };

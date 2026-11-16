@@ -104,6 +104,12 @@ export async function qPredToday(date: string): Promise<Row[]> {
   return await q(CACHE, "SELECT * FROM pred_today WHERE date=?", [date]);
 }
 
+export async function qPace(dates: string[]): Promise<Row[]> {
+  if (!dates.length || !(await hasTable(CACHE, "pace"))) return [];
+  const uniq = [...new Set(dates)];
+  return await q(CACHE, `SELECT date, course_norm, course, off_hhmm, dist_f, code, label, fig_rel, reason, source, fsp, field_def, n_field, horses FROM pace WHERE date IN (${placeholders(uniq.length)})`, uniq);
+}
+
 export async function cacheVersion(): Promise<string> {
   const stamp = (f: string) => { try { return String(fs.statSync(f).mtimeMs); } catch { return "0"; } };
   return `${stamp(CARDS)}:${stamp(CACHE)}`;

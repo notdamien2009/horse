@@ -3,7 +3,7 @@ import {
   ArrowDownWideNarrow, ChevronDown, ChevronsDownUp, ChevronsUpDown, Crown, Gauge, ListOrdered, Lock, Timer, TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Race, Runner, FormRun, Conditions, ClassChange } from "@/lib/racing";
+import type { Race, Runner, FormRun, Conditions, ClassChange, PaceInfo } from "@/lib/racing";
 import { ChartLegend, FigChart, FitTags, TrendBadge, chartRuns, runVal, trendOf } from "./FigChart";
 import { f0, hueStyle, rankHue, scaleHue, type HueFn } from "@/lib/colours";
 
@@ -208,7 +208,7 @@ export function RaceCard({ race: r }: { race: Race }) {
         </div>
         <div className="soon-card">
           <Timer size={18} aria-hidden />
-          <div><b>Sectionals</b><span>Once the sectional data is scraped.</span></div>
+          <div><b>Sectionals</b><span>Pace labels are on the form already. Full running-style notes still to come.</span></div>
           <span className="soon-tag"><Lock size={11} aria-hidden /> Coming soon</span>
         </div>
       </div>
@@ -380,6 +380,23 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
   );
 }
 
+const PACE_LBL: Record<PaceInfo["label"], string> = {
+  true: "True run", steady: "Steady", slow: "Slow-run (sprint finish)", unknown: "Unknown",
+};
+const REL_LBL: Record<PaceInfo["figRel"], string> = {
+  ok: "OK", low: "Low (pace-affected)", suspect: "Suspect high",
+};
+
+export function PaceBadge({ p }: { p: PaceInfo | null }) {
+  if (!p || p.label === "unknown") {
+    const why = p?.reason ? `Not enough to label the pace. ${p.reason}` : "Not enough evidence to label the pace of this race";
+    return <span className="pace unk" title={why}>–</span>;
+  }
+  const txt = p.label === "slow" ? "Slow-run" : p.label === "true" ? "True run" : "Steady";
+  const title = `${PACE_LBL[p.label]}. Figure: ${REL_LBL[p.figRel]}. ${p.reason}`;
+  return <span className={`pace ${p.label}${p.figRel !== "ok" ? ` ${p.figRel}` : ""}`} title={title}>{txt}</span>;
+}
+
 function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boolean }) {
   if (!runs?.length) return <div className="muted small">No previous runs.</div>;
   return (
@@ -389,28 +406,40 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
           <tr>
             <th>Date</th><th>Course</th><th>Dist</th><th>Going</th><th>Type</th><th className="n">Cl</th>
             <th className="n">Pos</th><th className="n">Btn</th><th className="n">SP</th><th className="n">OR</th>
-            <th className="n" title={juv ? "Figure on the 2yo scale (as in the chart)" : undefined}>{juv ? "2yo Fig" : "Fig"}</th><th>vs today</th><th>Comment</th>
+            <th className="n" title={juv ? "Figure on the 2yo scale (as in the chart)" : undefined}>{juv ? "2yo Fig" : "Fig"}</th>
+            <th title="Was this a truly run race, or a slow-run sprint finish? Hover for why.">Pace</th>
+            <th>vs today</th><th>Comment</th>
           </tr>
         </thead>
         <tbody>
-          {runs.map((f, i) => (
-            <tr key={i} className={f.fit.all ? "cond" : undefined}>
-              <td className="d">{fmtDate(f.date)}</td>
-              <td className="crs">{f.course}</td>
-              <td>{f.dist}</td>
-              <td>{shortGoing(f.going)}</td>
-              <td>{f.type}</td>
-              <td className="n">{f.cls}</td>
-              <td className="n"><span className={`pos ${posClass(f.pos)}`}>{f.pos || "–"}{f.ran ? <small>/{f.ran}</small> : null}</span></td>
-              <td className="n">{f.btn == null ? "" : f.pos === "1" ? "–" : f.btn}</td>
-              <td className="n">{f.sp || ""}</td>
-              <td className="n">{f.or ?? ""}</td>
-              <td className="n"><HeatPill v={runVal(f, juv)} hue={hue(runVal(f, juv))}
-                title={juv && f.fig != null ? `All-age figure ${f0(f.fig)}` : undefined} /></td>
-              <td><FitTags f={f} compact /></td>
-              <td className="cmt" title={f.comment || ""}><div>{f.comment || ""}</div></td>
-            </tr>
-          ))}
+          {runs.map((f, i) => {
+            const v = runVal(f, juv);
+            const unsure = f.pace && f.pace.figRel !== "ok";
+            const figTitle = [
+              juv && f.fig != null ? `All-age figure ${f0(f.fig)}` : null,
+              unsure ? `${REL_LBL[f.pace!.figRel]}. ${f.pace!.reason}` : null,
+            ].filter(Boolean).join(" — ") || undefined;
+            return (
+              <tr key={i} className={f.fit.all ? "cond" : undefined}>
+                <td className="d">{fmtDate(f.date)}</td>
+                <td className="crs">{f.course}</td>
+                <td>{f.dist}</td>
+                <td>{shortGoing(f.going)}</td>
+                <td>{f.type}</td>
+                <td className="n">{f.cls}</td>
+                <td className="n"><span className={`pos ${posClass(f.pos)}`}>{f.pos || "–"}{f.ran ? <small>/{f.ran}</small> : null}</span></td>
+                <td className="n">{f.btn == null ? "" : f.pos === "1" ? "–" : f.btn}</td>
+                <td className="n">{f.sp || ""}</td>
+                <td className="n">{f.or ?? ""}</td>
+                <td className={`n${unsure ? ` fig-unsure ${f.pace!.figRel}` : ""}`} title={figTitle}>
+                  <HeatPill v={v} hue={hue(v)} title={figTitle} />
+                </td>
+                <td><PaceBadge p={f.pace} /></td>
+                <td><FitTags f={f} compact /></td>
+                <td className="cmt" title={f.comment || ""}><div>{f.comment || ""}</div></td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

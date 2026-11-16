@@ -12,7 +12,7 @@ export default function HowWeRatePage() {
           <p className="guide-kicker">FurlongIQ</p>
           <h1>How we rate the horses</h1>
           <p className="guide-lead">
-            A plain-English guide to the figures, the predicted-today rating, and the flags on the race card — and what we&apos;re building next.
+            A plain-English guide to the figures, the predicted-today rating, pace labels, and the flags on the race card — and what we&apos;re building next.
           </p>
         </header>
 
@@ -134,23 +134,68 @@ export default function HowWeRatePage() {
           </p>
         </section>
 
+        <section>
+          <h2>Race pace and true-run figures</h2>
+          <p>
+            A speed figure can look poor — or brilliant — because of <em>how</em> the race was run, not how good the
+            horse is. Some races are truly run: they go an honest gallop and the time means what it says. Others crawl
+            early and turn into a sprint at the end. A horse can win easily like that and still only record a modest
+            figure, because the overall time was slow.
+          </p>
+          <p>
+            Every past run on the form now has a <b>Pace</b> badge, and a flag on whether we trust that figure:
+          </p>
+          <ul>
+            <li><span className="pace true">True run</span> — an honest or even pace. The figure is usually a fair measure of what the horse ran to.</li>
+            <li><span className="pace steady">Steady</span> — a shade slow early, with a quicker finish. Treat the figure with a little more caution.</li>
+            <li><span className="pace slow">Slow-run</span> — a slow early pace and a sprint finish. The figure is often lower than the horse&apos;s ability, and is marked as unreliable.</li>
+          </ul>
+          <p>We build that label from three checks, in this order:</p>
+          <ul>
+            <li>
+              <b>Sectionals</b> — where we have Racing TV data, the finishing-speed percentage (how much faster the
+              last two furlongs were than the race average). A high percentage means they finished much faster than
+              they travelled, which is the signature of a slow-run race. The bands are set from the data itself, by
+              code and distance, because a 2m hurdle doesn&apos;t finish the same way a 5f sprint does.
+            </li>
+            <li>
+              <b>The whole field</b> — we compare each runner&apos;s figure with the median of its other runs. If the
+              field as a group ran around 10 lb or more below their usual level, we mark it as a slow-run race and
+              the figure as <b>Low (pace-affected)</b>. If the field ran well <em>above</em> its usual level, we flag
+              the figure as <b>Suspect high</b> — the race standard may have been too soft.
+            </li>
+            <li>
+              <b>The comment</b> — a weaker fallback when we don&apos;t have those two. Phrases such as &quot;slowly run&quot;,
+              &quot;false pace&quot;, &quot;dictated&quot; or &quot;pulled hard&quot; can hint at a steady or slow race.
+            </li>
+          </ul>
+          <p>
+            Hover the badge for a one-line reason, for example &quot;Field ran 14 below their usual; finish 108% (sprint)&quot;.
+            Unreliable figures are drawn with a dashed, faded style on the form and as a dashed point on the trend chart.
+            This first version does not yet change the Predicted today weights — it shows you which past runs to trust.
+          </p>
+        </section>
+
         <section className="guide-soon">
           <h2>Coming soon</h2>
           <p>
-            The predicted figure above is a first pass. Once the Racing TV results and sectionals are in, we will:
+            The predicted figure above is a first pass. Once the Racing TV results and the rest of the sectionals are in, we will:
           </p>
           <ul>
             <li>
-              <b>Checking each figure</b> — compare it with the horse&apos;s official rating and the class of that race.
-              If the horses it beat ran to their usual level elsewhere, the figure holds up. If a whole field suddenly ran
-              15 lb above their norm, the race standard may have been wrong, and we&apos;ll flag that figure as suspect.
+              <b>Give pace-affected runs less weight</b> in Predicted today, once we have tested that it improves the
+              forecast on past races.
+            </li>
+            <li>
+              <b>Checking each figure against official ratings and class</b> — on top of the field-wide check above,
+              so a big figure in a weak race can be marked down on more than pace alone.
             </li>
             <li>
               <b>OR on the same scale</b> — so you can see whether a horse&apos;s speed backs up its handicap mark.
             </li>
             <li>
-              <b>Sectionals and running style</b> — once that scrape is in, how a horse actually runs its races
-              (travels strongly, leads, or finishes fast).
+              <b>Running style</b> — how a horse actually runs its races (travels strongly, leads, or finishes fast),
+              once the sectional scrape is complete.
             </li>
             <li>
               <b>Trade predictions</b> — the chance a horse trades below 2.0 in running, halves its price (DOB),

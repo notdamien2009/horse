@@ -151,6 +151,27 @@ export async function qPredToday(date: string): Promise<Row[]> {
   }
 }
 
+export async function qPace(dates: string[]): Promise<Row[]> {
+  const uniq = [...new Set(dates.filter(Boolean))];
+  if (!uniq.length) return [];
+  try {
+    const out: Row[] = [];
+    for (const part of chunks(uniq, 150)) {
+      const rows = await pages((from, to) =>
+        sb()
+          .from("pace")
+          .select("date,course_norm,course,off_hhmm,dist_f,code,label,fig_rel,reason,source,fsp,field_def,n_field,horses")
+          .in("date", part)
+          .range(from, to),
+      );
+      out.push(...rows.map((r) => normRow(r)));
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export async function cacheVersion(): Promise<string> {
   const meta = await qFigMeta();
   const map = Object.fromEntries(meta.map((r) => [r.k, r.v]));

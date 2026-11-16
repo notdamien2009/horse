@@ -88,3 +88,25 @@ if (existsSync(predScript) && hasModel) {
   }
   if (!scored) console.warn("[figures] predicted-today score skipped (Python not available). Run PREDICT_TODAY.bat when you can.");
 }
+
+// Race pace / true-run labels (sectionals + field-figure check). A miss must
+// not stop the site — form runs just will not have a pace badge.
+const paceScript = path.join(root, "tools", "pace_true_run.py");
+if (existsSync(paceScript) && existsSync(cache)) {
+  let paced = false;
+  for (const [cmd, ...pre] of tries) {
+    const r = spawnSync(cmd, [...pre, "-u", paceScript], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    if (r.error?.code === "ENOENT") continue;
+    if (r.status === 0) {
+      const out = (r.stdout || "").trim().split("\n").filter(Boolean);
+      const last = out[out.length - 1] || "pace labels ready";
+      console.log(`[figures] pace: ${last.replace(/^\[?figures\] ?/, "")}`);
+      paced = true;
+    } else {
+      const err = (r.stderr || r.stdout || "").trim().split("\n").slice(-4).join(" | ");
+      console.warn(`[figures] pace labels skipped: ${err || "exit " + r.status}`);
+    }
+    break;
+  }
+  if (!paced) console.warn("[figures] pace labels skipped (Python not available). Run PACE_TRUE_RUN.bat when you can.");
+}

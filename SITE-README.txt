@@ -1,4 +1,4 @@
-FURLONGIQ RACING SITE - v7 (Next.js, same set-up as PetLife)
+FURLONGIQ RACING SITE - v8 (Next.js, same set-up as PetLife)
 =========================================================
 Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)
@@ -71,12 +71,17 @@ READING A RACE CARD (v2 design)
   tougher than the last run, or the average of the last 3 runs (same discipline where we can). Class 1 is the
   highest grade. If the official rating has moved since the last run in this discipline, the change is shown
   next to the OR (e.g. OR 113 −2).
-  PREDICTED TODAY (v7): default sort and the big number on each runner. Interim model — does not yet check
-  whether a past figure was inflated by a soft race standard. HOW WE RATE: a plain-English guide at
-  /how-we-rate (link in the header), now including Predicted today, plus Best 3, trend, conditions, class
-  change, and what's coming next (figure checks, OR on the speed scale, sectionals, trade predictions).
+  PREDICTED TODAY (v7): default sort and the big number on each runner. Interim model — does not yet
+  down-weight pace-affected runs. HOW WE RATE: a plain-English guide at /how-we-rate (link in the header).
+  RACE PACE / TRUE-RUN (v8): each past run in the form has a Pace badge (True run / Steady / Slow-run)
+  and a reliability flag on the figure (OK, Low / pace-affected, or Suspect high). Built from Racing TV
+  finishing-speed % where we have it, a field-wide figure check, and comment keywords as a fallback.
+  Unreliable figures are dashed/faded on the table and as a dashed point on the trend chart. Hover the
+  badge for the reason (e.g. "Field ran 14 below their usual; finish 108% (sprint)"). Rebuild with
+  PACE_TRUE_RUN.bat, or let RUN_SITE.bat / npm run figures do it. This first version does not change
+  Predicted today weights.
   Honest note: a first pass at trade predictions matched the market but didn't beat it.
-  Not yet: odds & trading analysis and sectionals (greyed "coming soon" panels). No probabilities.
+  Not yet: odds & trading analysis, and full running-style notes. No probabilities.
 
 GIT
   If Speeds is a git repo, add these two lines to Speeds\.gitignore:  node_modules/   and   web/.next/

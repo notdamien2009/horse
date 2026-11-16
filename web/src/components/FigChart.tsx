@@ -138,12 +138,15 @@ export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size =
           }
           const cy = y(p.v), r = i === lastI ? D.r + 1.6 : D.r;
           const st = hueStyle(hue(p.v));
+          const unsure = p.pace && p.pace.figRel !== "ok";
+          const paceCls = p.pace && p.pace.label !== "unknown" ? ` pace-${p.pace.label}` : "";
           return (
             <g key={`p${i}`} className={hov === i ? "fc-hov" : undefined}>
               {p.fit.all && <circle cx={cx} cy={cy} r={r + 3.6} className="fc-ring" />}
               {p.fit.code
-                ? <circle cx={cx} cy={cy} r={r} className="fc-dot" style={st} />
-                : <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} transform={`rotate(45 ${cx} ${cy})`} className="fc-dot other" style={st} />}
+                ? <circle cx={cx} cy={cy} r={r} className={`fc-dot${unsure ? " unsure" : ""}${paceCls}`} style={st} />
+                : <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} transform={`rotate(45 ${cx} ${cy})`} className={`fc-dot other${unsure ? " unsure" : ""}${paceCls}`} style={st} />}
+              {unsure && <circle cx={cx} cy={cy + r + 3.2} r={1.7} className={`fc-pace ${p.pace!.figRel} ${p.pace!.label}`} />}
               {i === lastI && (
                 <text x={cx - r - (p.fit.all ? 8 : 5)} y={cy - r - 1} textAnchor="end" className="fc-last heat" style={st}>{f0(p.v)}</text>
               )}
@@ -175,8 +178,16 @@ export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size =
           <div className="tip-n">
             <span className={`tpos ${posCls(h.pos)}`}>{h.pos || "–"}{h.ran ? `/${h.ran}` : ""}</span>
             {h.v == null ? <span className="muted">no figure</span>
-              : <span className="pill-h" style={hueStyle(hue(h.v))}><small>Fig</small><b>{f0(h.v)}</b></span>}
+              : <span className={`pill-h${h.pace && h.pace.figRel !== "ok" ? " fig-dash" : ""}`} style={hueStyle(hue(h.v))}><small>Fig</small><b>{f0(h.v)}</b></span>}
           </div>
+          {h.pace && h.pace.label !== "unknown" && (
+            <div className="tip-pace">
+              <span className={`pace ${h.pace.label}${h.pace.figRel !== "ok" ? ` ${h.pace.figRel}` : ""}`}>
+                {h.pace.label === "slow" ? "Slow-run" : h.pace.label === "true" ? "True run" : "Steady"}
+              </span>
+              <span className="muted">{h.pace.reason}</span>
+            </div>
+          )}
           <FitTags f={h} />
         </div>
       )}
@@ -211,6 +222,7 @@ export function ChartLegend({ refLabel }: { refLabel: string }) {
       <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><circle cx="6" cy="6" r="4" className="fc-dot" style={hueStyle(110)} /></svg>other run</span>
       <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><rect x="2.6" y="2.6" width="6.8" height="6.8" transform="rotate(45 6 6)" className="fc-dot other" style={hueStyle(110)} /></svg>different code</span>
       <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><circle cx="6" cy="6" r="3.6" className="fc-nofig" /></svg>no figure</span>
+      <span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><circle cx="6" cy="6" r="4" className="fc-dot unsure" style={hueStyle(110)} /></svg>pace-affected fig</span>
       <span><svg width="20" height="10" viewBox="0 0 20 10" aria-hidden><line x1="1" x2="19" y1="5" y2="5" className="fc-ref" /></svg>{refLabel}</span>
     </span>
   );
