@@ -29,9 +29,12 @@ horse Supabase project (tkbhjbpiiierhjhjfjdd, Ireland). It does not use Nova.
 
 4. Each day, after the cards and figures are ready on this PC
      GET_TODAYS_CARDS.bat
-     npm run figures          (or just npm run dev, which also builds the cache)
+     PREDICT_TODAY.bat        (first time trains the model, ~2 minutes; later runs also fine)
+     npm run figures          (or just npm run dev, which also scores today's cards if the model exists)
      UPLOAD_TO_SUPABASE.bat
    The Vercel site updates on the next page load — no redeploy needed.
+   Predictions travel with fig_meta automatically. Optionally run tools/pred_today.sql
+   once in the horse Supabase SQL editor to also store them in a pred_today table.
 
 5. Push these site changes to GitHub (from the Speeds folder / horse repo)
      git add -A

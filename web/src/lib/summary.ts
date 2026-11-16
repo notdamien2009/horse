@@ -14,8 +14,7 @@ const memo = new Map<string, MeetingTabs[]>();
 function chipFrom(full: Race | undefined, fallback: Meeting["races"][number]): RaceChip {
   let out: RaceChip = { race_id: fallback.race_id, time: fallback.time, name: fallback.name, runners: Number(fallback.ride_count) || 0, top: null };
   if (!full) return out;
-  const juv = full.rank_basis.startsWith("2yo");
-  const val = (h: Race["runners"][number]) => (juv ? h.ratings.best3_2yo : h.ratings.best3 ?? h.ratings.best);
+  const val = (h: Race["runners"][number]) => h.pred;
   const ranked = full.runners.filter((h) => h.rank != null).sort((a, b) => a.rank! - b.rank!);
   const a = ranked[0], b = ranked[1];
   return {

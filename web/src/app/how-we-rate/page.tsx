@@ -12,7 +12,7 @@ export default function HowWeRatePage() {
           <p className="guide-kicker">FurlongIQ</p>
           <h1>How we rate the horses</h1>
           <p className="guide-lead">
-            A plain-English guide to the figures and flags on the race card — and what we&apos;re building next.
+            A plain-English guide to the figures, the predicted-today rating, and the flags on the race card — and what we&apos;re building next.
           </p>
         </header>
 
@@ -39,8 +39,10 @@ export default function HowWeRatePage() {
         <section>
           <h2>Best 3, Last and Avg 3</h2>
           <p>
-            The big number on each runner is <b>Best 3</b>: the average of the horse&apos;s best three figures from its last 12 runs,
+            <b>Best 3</b> is the average of the horse&apos;s best three figures from its last 12 runs,
             in the same discipline as today (Flat/AW or jumps). In 2yo races we use the 2yo scale instead.
+            It is shown under the predicted figure, as a second opinion — it rewards past peaks, which the
+            predicted figure is trying not to over-trust.
           </p>
           <p>The smaller chips underneath are:</p>
           <ul>
@@ -53,6 +55,31 @@ export default function HowWeRatePage() {
             Colours are ranked <b>within this race only</b>: green is the best of these runners, red is the weakest.
             A 110 can be green in one race and amber in another. That&apos;s deliberate — it shows who&apos;s ahead
             today, not a lifetime grade.
+          </p>
+        </section>
+
+
+        <section>
+          <h2>Predicted today</h2>
+          <p>
+            The big number on each runner is now a <b>predicted figure for today</b> — what we think the horse
+            will actually run in this race, not its best old figure. Recent runs count most, the trend is given
+            credit, and we take into account class change, days since the last run, trip, going, and how the
+            horse has performed at today&apos;s conditions.
+          </p>
+          <p>
+            The mix is learned from hundreds of thousands of past runs (using only information known before
+            each race), then tested on a later year it has not seen. On that test, the predicted figure is
+            closer to what the horse actually ran than Best 3 or the last figure alone, and the top-predicted
+            horse wins a little more often than the top Best 3 horse. It is still an interim model: it does
+            not yet check whether a past figure was inflated by a soft race standard, and a typical miss is
+            around a stone. The range under the number (for example 100–121) is that typical error band.
+          </p>
+          <p>
+            Runners are sorted by this predicted figure, strongest at the top. <b>Best 3</b> is still shown
+            underneath, so you can see where a horse sits on its peaks as well as on what we think it will
+            run today. Colours are still ranked within this race only: green is the highest predicted figure
+            in the field, red is the lowest.
           </p>
         </section>
 
@@ -110,14 +137,9 @@ export default function HowWeRatePage() {
         <section className="guide-soon">
           <h2>Coming soon</h2>
           <p>
-            We&apos;re building a fuller rating, to sit next to Best 3 as a <b>predicted figure for today</b>. The plan is:
+            The predicted figure above is a first pass. Once the Racing TV results and sectionals are in, we will:
           </p>
           <ul>
-            <li>
-              <b>A predicted figure for today</b> — recent runs count most, the trend is given credit, and we take into
-              account how well the horse fits today&apos;s conditions. The mix will be learned from thousands of past results,
-              then tested on races the model hasn&apos;t seen.
-            </li>
             <li>
               <b>Checking each figure</b> — compare it with the horse&apos;s official rating and the class of that race.
               If the horses it beat ran to their usual level elsewhere, the figure holds up. If a whole field suddenly ran

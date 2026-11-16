@@ -1,4 +1,4 @@
-FURLONGIQ RACING SITE - v6 (Next.js, same set-up as PetLife)
+FURLONGIQ RACING SITE - v7 (Next.js, same set-up as PetLife)
 =========================================================
 Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)
@@ -9,7 +9,10 @@ FIRST TIME (from cmd in C:\Users\PC Deals\Desktop\Speeds)
 
 EVERY DAY
   1. GET_TODAYS_CARDS.bat     - or: npm run cards   (downloads today's cards into data\cards.sqlite)
-  2. npm run dev              - or double-click RUN_SITE.bat, then open http://localhost:3050
+  2. PREDICT_TODAY.bat        - first time trains the 'predicted today' model (~2 minutes) and
+                                scores today's cards. Later days you can just run RUN_SITE.bat;
+                                it will re-score today's cards if the model is already there.
+  3. npm run dev              - or double-click RUN_SITE.bat, then open http://localhost:3050
      Before the site starts it builds/checks the figure cache (data\site_cache.sqlite) from
      data\speed_v3\speed_figures.csv (v2 if there is no v3). First time ~1 minute, then about a second.
      You should see a line like:
@@ -42,9 +45,10 @@ READING A RACE CARD (v2 design)
   Race header: time, course and race name, key facts, "Ratings at a glance" bar chart (Best 3, ranked and
   coloured), the TOP RATED horse with how many pounds clear it is, and the Sporting Life verdict.
   Runner cards: rank badge, cloth (draw), silk, horse, age/sex/weight/OR, jockey / trainer, odds on the right.
-  Big coloured number = Best 3 (average of the best 3 figures from the last 12 runs, Flat or jumps to match
-  the race; 2yo scale in 2yo races), with a bar against the race's best and "+N clear" / "-N off top".
-  Last / Avg 3 / Best / 2yo chips underneath. Form chips (win green, placed amber) as before.
+  Big coloured number = Predicted today (the figure we think the horse will run in this race: recent form,
+  trend, class change, trip, going and conditions-fit, learned from past results and tested on a later year).
+  A typical-error range sits under the number. Best 3 is kept as a chip underneath, then Last / Avg 3 / Best / 2yo.
+  "By rating" sorts by the predicted figure, strongest at the top (2yo scale in 2yo races). Form chips as before.
   SPEED-FIGURE TREND CHART (v3) on every runner, last 8 runs, oldest left -> newest right (newest always in the
   right-hand slot so the charts line up down the card; all charts in a race share one scale):
     - points coloured on the race heat scale; the last figure is labelled
@@ -66,10 +70,12 @@ READING A RACE CARD (v2 design)
   CLASS CHANGE (v6): a "Class drop ▼" (green) or "Class rise ▲" (amber) badge when today's class is easier or
   tougher than the last run, or the average of the last 3 runs (same discipline where we can). Class 1 is the
   highest grade. If the official rating has moved since the last run in this discipline, the change is shown
-  next to the OR (e.g. OR 113 −2). HOW WE RATE: a plain-English guide at /how-we-rate (link in the header),
-  covering figures, Best 3, trend, conditions, class change, and what's coming next (predicted figure, figure
-  checks, OR on the speed scale, sectionals, trade predictions). Honest note: a first pass at trade predictions
-  matched the market but didn't beat it.
+  next to the OR (e.g. OR 113 −2).
+  PREDICTED TODAY (v7): default sort and the big number on each runner. Interim model — does not yet check
+  whether a past figure was inflated by a soft race standard. HOW WE RATE: a plain-English guide at
+  /how-we-rate (link in the header), now including Predicted today, plus Best 3, trend, conditions, class
+  change, and what's coming next (figure checks, OR on the speed scale, sectionals, trade predictions).
+  Honest note: a first pass at trade predictions matched the market but didn't beat it.
   Not yet: odds & trading analysis and sectionals (greyed "coming soon" panels). No probabilities.
 
 GIT

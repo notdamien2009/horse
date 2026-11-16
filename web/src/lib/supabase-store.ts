@@ -139,6 +139,18 @@ export async function qRunnersByDate(date: string): Promise<Row[]> {
   return rows.map((r) => normRow(r));
 }
 
+
+export async function qPredToday(date: string): Promise<Row[]> {
+  try {
+    const rows = await pages((from, to) =>
+      sb().from("pred_today").select("*").eq("date", date).range(from, to),
+    );
+    return rows.map((r) => normRow(r));
+  } catch {
+    return [];
+  }
+}
+
 export async function cacheVersion(): Promise<string> {
   const meta = await qFigMeta();
   const map = Object.fromEntries(meta.map((r) => [r.k, r.v]));

@@ -67,11 +67,13 @@ export function RaceCard({ race: r }: { race: Race }) {
   const [sort, setSort] = useState<"rank" | "card">("rank");
   const [open, setOpen] = useState<Set<number>>(() => new Set());
   const juv = r.rank_basis.startsWith("2yo");
-  const head = (h: Runner) => (juv ? h.ratings.best3_2yo : h.ratings.best3 ?? h.ratings.best);
+  const head = (h: Runner) => h.pred;
+  const b3of = (h: Runner) => (juv ? h.ratings.best3_2yo : h.ratings.best3 ?? h.ratings.best);
 
   const m = useMemo(() => {
     const act = r.runners.filter((h) => !h.nr);
     const headHue = rankHue(act.map(head));
+    const b3Hue = rankHue(act.map(b3of));
     const hues = Object.fromEntries(SEC_KEYS.map((k) => [k, rankHue(act.map((h) => h.ratings[k]))])) as Record<(typeof SEC_KEYS)[number], HueFn>;
     const hv = act.map(head).filter((v): v is number => v != null);
     const top = hv.length ? Math.max(...hv) : null;
@@ -93,7 +95,7 @@ export function RaceCard({ race: r }: { race: Race }) {
     const cLo = Math.floor(Math.max(cv.length ? Math.min(...cv) : cMax - 40, (hv.length ? low : cMax) - 25) - 4);
     const cHi = Math.ceil(cMax + 5);
     const chartHue = hv.length ? scaleHue(low - 15, top) : runHue;
-    return { headHue, hues, top, barLo, runHue, sLo, sHi, ranked, gap, unrated, show2, cLo, cHi, chartHue };
+    return { headHue, b3Hue, hues, top, barLo, runHue, sLo, sHi, ranked, gap, unrated, show2, cLo, cHi, chartHue };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [r]);
 
@@ -129,7 +131,7 @@ export function RaceCard({ race: r }: { race: Race }) {
 
         <div className="hero-grid">
           <div className="glance">
-            <div className="sec-title"><Gauge size={15} aria-hidden /> Ratings at a glance <span>{juv ? "2yo scale · best-3 avg" : "Best 3 · average of the best 3 of the last 12 runs"}</span></div>
+            <div className="sec-title"><Gauge size={15} aria-hidden /> Ratings at a glance <span>{juv ? "2yo scale · predicted figure for today" : "Predicted today · the figure we think each horse will run"}</span></div>
             {m.ranked.length ? (
               <ol className="gbars">
                 {m.ranked.map((h, i) => {
@@ -184,7 +186,7 @@ export function RaceCard({ race: r }: { race: Race }) {
           <span className="today-cond" title="A past run counts as 'today's conditions' when all of these match">
             <b>◎ Today&apos;s conditions:</b> {condText(r.cond, r.distance, r.going)}
           </span>
-          <ChartLegend refLabel={juv ? "top 2yo Best 3" : "top Best 3"} />
+          <ChartLegend refLabel={juv ? "top 2yo predicted" : "top predicted"} />
         </div>
         <button type="button" className="ghost" onClick={setAll}>
           {allOpen ? <><ChevronsDownUp size={14} aria-hidden /> Collapse all form</> : <><ChevronsUpDown size={14} aria-hidden /> Expand all form</>}
@@ -193,7 +195,7 @@ export function RaceCard({ race: r }: { race: Race }) {
 
       <div className="runners">
         {list.map((x, i) => (
-          <RunnerCard key={x.ride_id} x={x} i={i} head={head(x)} juv={juv} m={m} pct={pct}
+          <RunnerCard key={x.ride_id} x={x} i={i} head={head(x)} b3={b3of(x)} juv={juv} m={m} pct={pct}
             isOpen={open.has(x.ride_id)} onToggle={() => toggle(x.ride_id)} cond={r.cond} />
         ))}
       </div>
@@ -215,7 +217,7 @@ export function RaceCard({ race: r }: { race: Race }) {
 }
 
 type M = {
-  headHue: HueFn; hues: Record<(typeof SEC_KEYS)[number], HueFn>; top: number | null; runHue: HueFn;
+  headHue: HueFn; b3Hue: HueFn; hues: Record<(typeof SEC_KEYS)[number], HueFn>; top: number | null; runHue: HueFn;
   sLo: number; sHi: number; gap: number | null; show2: boolean; cLo: number; cHi: number; chartHue: HueFn;
 };
 
@@ -246,12 +248,12 @@ function condText(c: Conditions, dist: string, going: string | null): string {
   ].join(" · ");
 }
 
-function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
-  x: Runner; i: number; head: number | null; juv: boolean; m: M; pct: (v: number | null) => number; isOpen: boolean; onToggle: () => void;
+function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
+  x: Runner; i: number; head: number | null; b3: number | null; juv: boolean; m: M; pct: (v: number | null) => number; isOpen: boolean; onToggle: () => void;
   cond: Conditions;
 }) {
   const trend = useMemo(() => trendOf(chartRuns(x.form_runs, juv), cond), [x.form_runs, juv, cond]);
-  const refLabel = juv ? "2yo B3" : "top B3";
+  const refLabel = juv ? "top 2yo pred" : "top predicted";
   const cb = x.cond_best;
   const top = x.rank === 1, rt = x.ratings;
   const hue = m.headHue(head);
@@ -315,8 +317,13 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
         <div className="c-rating" style={hueStyle(hue)}>
           <div className="headline">
             <div className="hl-num">
-              <small>{juv ? "2yo B3" : "Best 3"}</small>
+              <small>{juv ? "2yo predicted" : "Predicted today"}</small>
               <span className={`big heat${head == null ? " na" : ""}`}>{head == null ? "–" : f0(head)}</span>
+              {head != null && x.pred_lo != null && x.pred_hi != null && (
+                <span className="pred-band" title={`Typical error band on unseen races: ${f0(x.pred_lo)} to ${f0(x.pred_hi)}`}>
+                  {f0(x.pred_lo)}–{f0(x.pred_hi)}
+                </span>
+              )}
             </div>
             <div className="hl-bar">
               <span className="track"><span className="fill" style={{ width: `${pct(head)}%` }} /></span>
@@ -328,6 +335,8 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
             </div>
           </div>
           <div className="secs">
+            <HeatPill v={b3} hue={m.b3Hue(b3)} label={juv ? "2yo B3" : "Best 3"}
+              title={juv ? "Average of the best 3 figures on the 2yo scale from the last 12 runs" : "Average of the best 3 figures from the last 12 runs (same discipline)"} />
             {keys.map((k) => (
               <HeatPill key={k} v={rt[k]} hue={m.hues[k](rt[k])} label={SEC_LABEL[k][0]} title={SEC_LABEL[k][1]} />
             ))}
@@ -359,7 +368,7 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
                   <small className="cb-n">{cb.course} {fmtDate(cb.date)} · {cb.n} run{cb.n === 1 ? "" : "s"}</small>
                 </span>
               ) : <span className="muted small">No figure yet at today&apos;s conditions</span>}
-              <ChartLegend refLabel={juv ? "top 2yo Best 3 in this race" : "top Best 3 in this race"} />
+              <ChartLegend refLabel={juv ? "top 2yo predicted in this race" : "top predicted in this race"} />
             </div>
             <FigChart runs={x.form_runs} juv={juv} lo={m.cLo} hi={m.cHi} hue={m.chartHue} refV={m.top}
               refLabel={refLabel} today={cond} trend={trend} size="lg" />

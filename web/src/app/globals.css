@@ -235,6 +235,7 @@ button.ghost{background:var(--panel)}
 .hl-num{display:flex;flex-direction:column;align-items:flex-start;line-height:1;min-width:64px}
 .hl-num small{font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
 .big{font-size:34px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.pred-band{display:block;margin-top:4px;font-size:11px;font-weight:650;color:var(--muted);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
 .runner.top .big{text-shadow:0 0 22px hsl(var(--h) 80% 50% / .35)}
 .hl-bar{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;padding-top:12px}
 .track{display:block;height:8px;border-radius:5px;background:var(--panel3);overflow:hidden}

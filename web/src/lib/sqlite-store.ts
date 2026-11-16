@@ -98,6 +98,12 @@ export async function qRunnersByDate(date: string): Promise<Row[]> {
   return await q(CARDS, "SELECT * FROM runners WHERE date=? ORDER BY race_id, cloth", [date]);
 }
 
+
+export async function qPredToday(date: string): Promise<Row[]> {
+  if (!(await hasTable(CACHE, "pred_today"))) return [];
+  return await q(CACHE, "SELECT * FROM pred_today WHERE date=?", [date]);
+}
+
 export async function cacheVersion(): Promise<string> {
   const stamp = (f: string) => { try { return String(fs.statSync(f).mtimeMs); } catch { return "0"; } };
   return `${stamp(CARDS)}:${stamp(CACHE)}`;

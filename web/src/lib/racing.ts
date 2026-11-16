@@ -1,8 +1,9 @@
 import "server-only";
 import {
-  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate,
+  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate,
   type Row,
 } from "./store";
+import { bundledPayload, parsePayload, predictFromFigs, storedPreds, type Pred, type PredPayload } from "./predict";
 
 const JUMPS = ["Hurdle", "Chase", "NHF"];
 const isJumps = (code: string | null | undefined) => JUMPS.includes(code ?? "");
@@ -29,6 +30,7 @@ export type ClassChange = {
 export type Runner = Row & {
   ratings: Ratings; form_runs: FormRun[]; nr: boolean; rank: number | null; cond_best: CondBest;
   class_change: ClassChange | null; or_delta: number | null;
+  pred: number | null; pred_lo: number | null; pred_hi: number | null;
 };
 export type Race = Row & {
   race_id: number; time: string; course: string; name: string; date: string; family: string;
@@ -263,7 +265,32 @@ export function orChange(form: FormRun[], todayOr: number | null, todayCode: str
   return d === 0 ? null : d;
 }
 
-function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>, figsByHorse: Map<string, Row[]>): Race {
+
+type PredCtx = { payload: PredPayload | null; stored: Map<number, Pred> };
+
+async function loadPredContext(date: string): Promise<PredCtx> {
+  const metaRows = await qFigMeta();
+  const meta = Object.fromEntries(metaRows.map((r) => [r.k, r.v]));
+  const payload = parsePayload(meta.pred_model) ?? bundledPayload();
+  const stored = storedPreds(meta.pred_today, date);
+  try {
+    for (const r of await qPredToday(date)) {
+      if (r?.pred == null) continue;
+      stored.set(Number(r.ride_id), {
+        pred: Number(r.pred),
+        lo: r.lo != null ? Number(r.lo) : Number(r.pred),
+        hi: r.hi != null ? Number(r.hi) : Number(r.pred),
+        best3: r.best3 != null ? Number(r.best3) : null,
+        last_fig: r.last_fig != null ? Number(r.last_fig) : null,
+        n_prior: Number(r.n_prior ?? 0),
+        scale: r.scale === "2yo" ? "2yo" : "all",
+      });
+    }
+  } catch { /* pred_today table is optional */ }
+  return { payload, stored };
+}
+
+function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>, figsByHorse: Map<string, Row[]>, ctx: PredCtx): Race {
   const race = r as Race;
   const fam = raceFamily(race.name);
   race.family = fam;
@@ -280,13 +307,28 @@ function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>,
     (h as Row)._figs = figs;
     h.nr = !["RUNNER", ""].includes(String(h.status ?? "RUNNER").toUpperCase());
     h.rank = null;
+    h.pred = null; h.pred_lo = null; h.pred_hi = null;
   }
   const act = runners.filter((h) => !h.nr);
   const juv = String(race.age_band ?? "").toUpperCase().startsWith("2YO") && act.some((h) => h.ratings.best3_2yo != null);
-  race.rank_basis = juv ? "2yo scale, best-3 avg" : "best-3 avg";
-  for (const h of runners) { h.cond_best = condBest((h as Row)._figs, race.cond, juv); delete (h as Row)._figs; }
-  const key = (h: Runner) => (juv ? h.ratings.best3_2yo : h.ratings.best3 ?? h.ratings.best);
-  act.filter((h) => key(h) != null).sort((a, b) => key(b)! - key(a)!).forEach((h, i) => (h.rank = i + 1));
+  race.rank_basis = juv ? "2yo scale, predicted today" : "predicted today";
+  for (const h of runners) {
+    const figs = ((h as Row)._figs ?? []) as Row[];
+    h.cond_best = condBest(figs, race.cond, juv);
+    const fromStore = ctx.stored.get(h.ride_id);
+    const computed = predictFromFigs(figs, {
+      date: String(race.date), code: race.cond.code, aw: race.cond.aw, dist_f: race.cond.dist_f,
+      going_n: race.cond.going_n, cls: race.cond.cls_n, age: h.age ?? null,
+      or_: int(h.official_rating), days: h.last_ran_days ?? null,
+    }, ctx.payload, juv);
+    const p = fromStore ?? computed;
+    h.pred = p?.pred ?? null;
+    h.pred_lo = p?.lo ?? null;
+    h.pred_hi = p?.hi ?? null;
+    delete (h as Row)._figs;
+  }
+  const key = (h: Runner) => h.pred;
+  act.filter((h) => key(h) != null).sort((a, b) => key(b)! - key(a)! || (a.cloth ?? 0) - (b.cloth ?? 0)).forEach((h, i) => (h.rank = i + 1));
   race.rated = runners.filter((h) => h.rank != null).length;
   race.active = act.length;
   race.runners = runners;
@@ -321,7 +363,8 @@ export async function race(raceId: number): Promise<Race | null> {
   const prev = await qPrevRuns(runners.map((h) => h.ride_id));
   const norms = [...new Set(runners.map((h) => h.horse_norm).filter(Boolean))];
   const figs = await qFigs(norms, r.date);
-  return decorateRace(r, runners, groupPrev(prev), groupFigs(figs));
+  const ctx = await loadPredContext(String(r.date));
+  return decorateRace(r, runners, groupPrev(prev), groupFigs(figs), ctx);
 }
 
 /** All races on a date, with runners/form/figures, in as few store reads as possible. */
@@ -334,6 +377,7 @@ export async function racesOn(date: string): Promise<Race[]> {
   const figs = await qFigs(norms, full[0].date);
   const prevBy = groupPrev(prev);
   const figsBy = groupFigs(figs);
+  const ctx = await loadPredContext(String(full[0].date));
   const byRace = new Map<number, Runner[]>();
   for (const h of runners) {
     const list = byRace.get(h.race_id) ?? [];
@@ -342,7 +386,7 @@ export async function racesOn(date: string): Promise<Race[]> {
   }
   return full
     .sort((a, b) => String(a.time).localeCompare(String(b.time)))
-    .map((r) => decorateRace(r, (byRace.get(r.race_id) ?? []).slice(), prevBy, figsBy));
+    .map((r) => decorateRace(r, (byRace.get(r.race_id) ?? []).slice(), prevBy, figsBy, ctx));
 }
 
 export { cacheVersion };

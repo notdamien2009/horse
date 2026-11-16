@@ -64,3 +64,27 @@ try {
 if (!n.f) fail(`${cache} has ${n.n} rows but no figures in it. Check ${csv}.`);
 if (path.resolve(meta.src) !== path.resolve(csv)) console.warn(`[figures] Note: cache was built from ${meta.src}, expected ${csv}.`);
 console.log(`[figures] READY: ${meta.version} - ${Number(n.n).toLocaleString("en-GB")} runs (${Number(n.f).toLocaleString("en-GB")} with a figure), races up to ${meta.max_date}, 2yo scale ${meta.has_2yo === "1" ? "yes" : "no"} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
+
+// Score today's cards with the predicted-today model when one is available (fast).
+// A missing or failed score must not stop the site — the app can also compute
+// predictions from the bundled model.
+const predScript = path.join(root, "tools", "predict_today.py");
+const hasModel = existsSync(path.join(root, "data", "predict_today", "model.json")) || existsSync(path.join(root, "web", "src", "lib", "pred-model.json"));
+if (existsSync(predScript) && hasModel) {
+  let scored = false;
+  for (const [cmd, ...pre] of tries) {
+    const r = spawnSync(cmd, [...pre, "-u", predScript, "--score-only"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    if (r.error?.code === "ENOENT") continue;
+    if (r.status === 0) {
+      const out = (r.stdout || "").trim().split("\n").filter(Boolean);
+      const last = out[out.length - 1] || "scored today's cards";
+      console.log(`[figures] predicted today: ${last.replace(/^\[?figures\] ?/, "")}`);
+      scored = true;
+    } else {
+      const err = (r.stderr || r.stdout || "").trim().split("\n").slice(-4).join(" | ");
+      console.warn(`[figures] predicted-today score skipped: ${err || "exit " + r.status}`);
+    }
+    break;
+  }
+  if (!scored) console.warn("[figures] predicted-today score skipped (Python not available). Run PREDICT_TODAY.bat when you can.");
+}
