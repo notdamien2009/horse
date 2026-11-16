@@ -3,7 +3,7 @@ import {
   ArrowDownWideNarrow, ChevronDown, ChevronsDownUp, ChevronsUpDown, Crown, Gauge, ListOrdered, Lock, Timer, TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { Race, Runner, FormRun, Conditions } from "@/lib/racing";
+import type { Race, Runner, FormRun, Conditions, ClassChange } from "@/lib/racing";
 import { ChartLegend, FigChart, FitTags, TrendBadge, chartRuns, runVal, trendOf } from "./FigChart";
 import { f0, hueStyle, rankHue, scaleHue, type HueFn } from "@/lib/colours";
 
@@ -219,6 +219,22 @@ type M = {
   sLo: number; sHi: number; gap: number | null; show2: boolean; cLo: number; cHi: number; chartHue: HueFn;
 };
 
+
+function ClassBadge({ c }: { c: ClassChange | null }) {
+  if (!c) return null;
+  const lastTxt = c.last != null ? `Last run: Class ${c.last}.` : "Last run class unknown.";
+  const avgTxt = c.avg != null ? ` Average of last ${c.n} run${c.n === 1 ? "" : "s"} with a class: Class ${c.avg}.` : "";
+  const why = c.dir === "drop"
+    ? " Dropping in class — today's race is easier than recent runs."
+    : " Stepping up in class — today's race is tougher than recent runs.";
+  return (
+    <span className={`cls-flag ${c.dir}`}
+      title={`Today Class ${c.today}. ${lastTxt}${avgTxt}${why} Class 1 is the highest grade; Class 6/7 is the lowest.`}>
+      {c.dir === "drop" ? "Class drop ▼" : "Class rise ▲"}
+    </span>
+  );
+}
+
 /** "Hurdle · 2m 4f 116y ±1f · Good to Soft ±1 step · Class 4 ±1" */
 function condText(c: Conditions, dist: string, going: string | null): string {
   const tol = c.dist_f == null ? "" : ` ±${Math.max(1, c.dist_f * 0.1).toFixed(c.dist_f * 0.1 > 1 ? 1 : 0)}f`;
@@ -265,7 +281,12 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
           <div className="hmeta">
             <span>{x.age ?? ""}yo {SEX[String(x.sex ?? "").toLowerCase()] ?? x.sex ?? ""}</span>
             {x.weight && <span>{x.weight}</span>}
-            <span>OR <b>{x.official_rating ?? "–"}</b></span>
+            <span>OR <b>{x.official_rating ?? "–"}</b>{x.or_delta != null && (
+              <em className={`or-delta ${x.or_delta < 0 ? "down" : "up"}`}
+                title={`Official rating ${x.or_delta < 0 ? "down" : "up"} ${Math.abs(x.or_delta)} lb since last run in this discipline`}>
+                {x.or_delta > 0 ? `+${x.or_delta}` : x.or_delta}
+              </em>
+            )}</span>
             {x.last_ran_days != null && <span title="Days since last run">{x.last_ran_days}d</span>}
           </div>
           <div className="hpeople">
@@ -280,6 +301,7 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
           </div>
           <div className="form-tags">
             <TrendBadge t={trend} />
+            <ClassBadge c={x.class_change} />
             {cb && (
               <span className="pill-h cond-best" style={hueStyle(m.chartHue(cb.fig))}
                 title={`Best figure at today's conditions: ${f0(cb.fig)} at ${cb.course} on ${fmtDate(cb.date)} (${cb.n} run${cb.n === 1 ? "" : "s"} at these conditions)`}>
@@ -330,6 +352,7 @@ function RunnerCard({ x, i, head, juv, m, pct, isOpen, onToggle, cond }: {
             <div className="bigchart-head">
               <span className="sec-title"><TrendingUp size={14} aria-hidden /> Speed figures, last {Math.min(8, x.form_runs.length)} runs</span>
               <TrendBadge t={trend} />
+              <ClassBadge c={x.class_change} />
               {cb ? (
                 <span className="pill-h cond-best" style={hueStyle(m.chartHue(cb.fig))}>
                   <small>◎ Best at today&apos;s conditions</small><b>{f0(cb.fig)}</b>

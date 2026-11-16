@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Database, TriangleAlert } from "lucide-react";
 import { cardDate, figMeta } from "@/lib/racing";
 import { meetingTabs } from "@/lib/summary";
@@ -25,7 +26,7 @@ export async function SiteShell({ activeId, children }: { activeId: number | nul
   );
   return (
     <>
-      <a className="skip" href="#main">Skip to race card</a>
+      <a className="skip" href="#main">Skip to content</a>
       <RaceTabs isToday={isToday} activeId={activeId} meetings={meetings} dateLabel={label} status={status}
         stale={!isToday && meetings.length > 0} />
       <main id="main">{children}</main>
@@ -33,6 +34,7 @@ export async function SiteShell({ activeId, children }: { activeId: number | nul
         <span>Cards: Sporting Life (run <b>GET_TODAYS_CARDS.bat</b> to refresh)</span>
         <span>Figures: our speed figures · 9st Flat / 11st jumps base</span>
         <span className="legend">Ranked within each race <i aria-hidden /> <em>worst → best</em></span>
+        <Link href="/how-we-rate" prefetch={false}>How we rate the horses</Link>
       </footer>
     </>
   );

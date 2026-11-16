@@ -23,7 +23,13 @@ export type FormRun = {
 export type Fit = { code: boolean; dist: boolean; going: boolean; cls: boolean | null; all: boolean };
 export type Conditions = { code: string; dist_f: number | null; going_n: number | null; aw: boolean; cls_n: number | null };
 export type CondBest = { fig: number; n: number; date: string; course: string } | null;
-export type Runner = Row & { ratings: Ratings; form_runs: FormRun[]; nr: boolean; rank: number | null; cond_best: CondBest };
+export type ClassChange = {
+  dir: "drop" | "rise"; today: number; last: number | null; avg: number | null; n: number;
+};
+export type Runner = Row & {
+  ratings: Ratings; form_runs: FormRun[]; nr: boolean; rank: number | null; cond_best: CondBest;
+  class_change: ClassChange | null; or_delta: number | null;
+};
 export type Race = Row & {
   race_id: number; time: string; course: string; name: string; date: string; family: string;
   rank_basis: string; rated: number; active: number; runners: Runner[]; cond: Conditions;
@@ -225,6 +231,38 @@ function buildForm(prev: Row[], figs: Row[], today: Conditions): FormRun[] {
   return out;
 }
 
+
+/** Class 1 is the highest grade. A "drop" means today is easier (a higher class number) than recent runs. */
+export function classChange(form: FormRun[], todayCls: number | null, todayCode: string): ClassChange | null {
+  if (todayCls == null) return null;
+  const last3 = form.slice(0, 3);
+  const withCls = last3.filter((f) => f.cls_n != null);
+  const same = withCls.filter((f) => isJumps(f.code) === isJumps(todayCode));
+  const used = same.length ? same : withCls;
+  if (!used.length) return null;
+  const last = used[0].cls_n!;
+  const n = used.length;
+  const avg = Math.round((used.reduce((a, f) => a + f.cls_n!, 0) / n) * 10) / 10;
+  const lastDelta = todayCls - last;
+  const avgDelta = todayCls - avg;
+  let dir: "drop" | "rise" | null = null;
+  // Prefer the last run when it differs by a full class; otherwise use the recent average.
+  if (Math.abs(lastDelta) >= 1) dir = lastDelta > 0 ? "drop" : "rise";
+  else if (avgDelta >= 0.5) dir = "drop";
+  else if (avgDelta <= -0.5) dir = "rise";
+  if (!dir) return null;
+  return { dir, today: todayCls, last, avg, n };
+}
+
+/** Official-rating change since the last run in the same discipline (jumps or Flat/AW). */
+export function orChange(form: FormRun[], todayOr: number | null, todayCode: string): number | null {
+  if (todayOr == null) return null;
+  const last = form.find((f) => f.or != null && isJumps(f.code) === isJumps(todayCode));
+  if (last?.or == null) return null;
+  const d = todayOr - last.or;
+  return d === 0 ? null : d;
+}
+
 function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>, figsByHorse: Map<string, Row[]>): Race {
   const race = r as Race;
   const fam = raceFamily(race.name);
@@ -237,6 +275,8 @@ function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>,
     const figs = figsForHorse(figsByHorse.get(h.horse_norm) ?? [], h.horse_norm, h.age ? yr - h.age : null);
     h.ratings = ratings(figs, fam);
     h.form_runs = buildForm(prev, figs, race.cond);
+    h.class_change = classChange(h.form_runs, race.cond.cls_n, race.cond.code);
+    h.or_delta = orChange(h.form_runs, int(h.official_rating), race.cond.code);
     (h as Row)._figs = figs;
     h.nr = !["RUNNER", ""].includes(String(h.status ?? "RUNNER").toUpperCase());
     h.rank = null;

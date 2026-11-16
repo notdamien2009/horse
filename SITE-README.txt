@@ -1,4 +1,4 @@
-FURLONGIQ RACING SITE - v5 (Next.js, same set-up as PetLife)
+FURLONGIQ RACING SITE - v6 (Next.js, same set-up as PetLife)
 =========================================================
 Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)
@@ -27,7 +27,7 @@ OTHER COMMANDS
 WHERE THINGS ARE
   package.json, RUN_SITE.bat     - in the Speeds folder (run npm from here)
   web\                           - the website (Next.js 16 App Router, React 19, TypeScript)
-    web\src\app\                 - pages: / (jumps to the next race), /race/<id>, /api/meta, /api/card, /api/race/<id>
+    web\src\app\                 - pages: / (jumps to the next race), /race/<id>, /how-we-rate, /api/meta, /api/card, /api/race/<id>
     web\src\components\          - RaceTabs (top bar), RaceCard (hero + runner cards), ThemeToggle, SiteShell
     web\src\lib\                 - db.ts (reads the SQLite files with Node's built-in node:sqlite), racing.ts, summary.ts (race-tab summaries), colours.ts
     web\scripts\prepare-figures.mjs - the figure-cache step that runs before npm run dev / build
@@ -63,6 +63,13 @@ READING A RACE CARD (v2 design)
   Click a card (or the arrow) to open its form: a big version of the chart, then the last 8 runs with a
   "vs today" column (C = code, T = trip, G = going, Cl = class; gold rows = today's conditions).
   Colours are ranked within the race: green = best, red = worst. Sun/moon button = light/dark.
+  CLASS CHANGE (v6): a "Class drop ▼" (green) or "Class rise ▲" (amber) badge when today's class is easier or
+  tougher than the last run, or the average of the last 3 runs (same discipline where we can). Class 1 is the
+  highest grade. If the official rating has moved since the last run in this discipline, the change is shown
+  next to the OR (e.g. OR 113 −2). HOW WE RATE: a plain-English guide at /how-we-rate (link in the header),
+  covering figures, Best 3, trend, conditions, class change, and what's coming next (predicted figure, figure
+  checks, OR on the speed scale, sectionals, trade predictions). Honest note: a first pass at trade predictions
+  matched the market but didn't beat it.
   Not yet: odds & trading analysis and sectionals (greyed "coming soon" panels). No probabilities.
 
 GIT

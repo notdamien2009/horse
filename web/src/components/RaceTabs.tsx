@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Clock, Crown, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MeetingTabs } from "@/lib/summary";
@@ -22,6 +23,7 @@ export function RaceTabs({ meetings, activeId, isToday, dateLabel, status, stale
   status: React.ReactNode; stale: boolean;
 }) {
   // "now" is worked out in the browser, so races that have already run fade out and the countdown ticks
+  const path = usePathname();
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
@@ -76,6 +78,10 @@ export function RaceTabs({ meetings, activeId, isToday, dateLabel, status, stale
           </nav>
         )}
         <div className="bar1-right">
+          <Link href="/how-we-rate" prefetch={false}
+            className={`how-link${path === "/how-we-rate" ? " on" : ""}`}>
+            How we rate
+          </Link>
           {next && now && (
             <Link href={`/race/${next.race_id}`} prefetch={false} className="nextoff" title={`Next off: ${next.time} ${next.course} – ${next.name}`}>
               <Clock size={14} aria-hidden />
