@@ -53,9 +53,12 @@ export function RaceTabs({ meetings, activeId, isToday, dateLabel, status, stale
   return (
     <header className="topbar">
       <div className="bar1">
-        <Link href="/" className="brand" prefetch={false} aria-label="Speeds – next race">
-          <span className="logo" aria-hidden>S</span>
-          <span className="brand-txt">Speeds<small>{dateLabel}{stale ? " · latest cards" : ""}</small></span>
+        <Link href="/" className="brand" prefetch={false} aria-label="FurlongIQ – next race">
+          <img src="/logo.png" alt="" className="logo-img" width={34} height={34} />
+          <span className="brand-txt">
+            <span className="wordmark">Furlong<span className="brand-iq">IQ</span></span>
+            <small>{dateLabel}{stale ? " · latest cards" : ""}</small>
+          </span>
         </Link>
         {meetings.length > 0 && (
           <nav className="mpills" aria-label="Meetings">

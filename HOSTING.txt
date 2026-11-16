@@ -1,4 +1,4 @@
-SPEEDS ON VERCEL + HORSE SUPABASE
+FURLONGIQ ON VERCEL + HORSE SUPABASE
 =================================
 The live site reads today's cards and the full speed-figure history from the
 horse Supabase project (tkbhjbpiiierhjhjfjdd, Ireland). It does not use Nova.
@@ -36,7 +36,7 @@ horse Supabase project (tkbhjbpiiierhjhjfjdd, Ireland). It does not use Nova.
 5. Push these site changes to GitHub (from the Speeds folder / horse repo)
      git add -A
      git status
-     git commit -m "Read Speeds cards and figures from horse Supabase on Vercel"
+     git commit -m "Read FurlongIQ cards and figures from horse Supabase on Vercel"
      git push origin main
 
    Do not add .env, data/, *.sqlite or node_modules (they are gitignored).

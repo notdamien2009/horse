@@ -1,0 +1,7 @@
+Add these two in Vercel > horse project > Settings > Environment Variables (all environments):
+
+SUPABASE_URL
+https://tkbhjbpiiierhjhjfjdd.supabase.co
+
+SUPABASE_ANON_KEY
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrYmhqYnBpaWllcmhqaGpmamRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MjcyNjQsImV4cCI6MjExMDQwMzI2NH0.p_7LGJACFENL0IxbODfCiMAB8UpCz6CusG5ayS_0NlM

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload local Speeds cards + figure history to the horse Supabase project.
+"""Upload local FurlongIQ cards + figure history to the horse Supabase project.
 
 Reads data/cards.sqlite and data/site_cache.sqlite, then replaces the public
 tables in Supabase. Auth is the service role key from a local .env file
@@ -260,7 +260,7 @@ def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], met
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Upload Speeds SQLite data to the horse Supabase project.")
+    parser = argparse.ArgumentParser(description="Upload FurlongIQ SQLite data to the horse Supabase project.")
     parser.add_argument("--dump-sql", metavar="DIR", help="Write SQL batches instead of uploading.")
     args = parser.parse_args()
 

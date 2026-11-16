@@ -2,7 +2,7 @@
   "name": "speeds-racing-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Speeds - today's UK & Irish race cards with form, speed figures and ratings. Runs locally.",
+  "description": "FurlongIQ - today's UK & Irish race cards with form, speed figures and ratings. Runs locally.",
   "scripts": {
     "predev": "node web/scripts/prepare-figures.mjs",
     "dev": "next dev web -p 3050",

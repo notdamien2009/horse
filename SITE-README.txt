@@ -1,4 +1,4 @@
-SPEEDS RACING SITE - v3 (trend charts) (Next.js, same set-up as PetLife)
+FURLONGIQ RACING SITE - v5 (Next.js, same set-up as PetLife)
 =========================================================
 Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)

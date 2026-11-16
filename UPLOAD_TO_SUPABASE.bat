@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title Upload Speeds data to horse Supabase
+title Upload FurlongIQ data to horse Supabase
 if not exist ".env" (
   echo.
   echo Missing .env in the Speeds folder.

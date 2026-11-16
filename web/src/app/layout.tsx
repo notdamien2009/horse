@@ -2,10 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Speeds | Today's Racing", template: "%s | Speeds" },
+  title: { default: "FurlongIQ · Today's Racing", template: "%s · FurlongIQ" },
   description: "Today's UK & Irish race cards with form, our speed figures and ratings.",
-  applicationName: "Speeds",
-  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
+  applicationName: "FurlongIQ",
 };
 
 export const viewport: Viewport = { themeColor: "#070a10" };

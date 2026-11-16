@@ -2,7 +2,7 @@
   "name": "speeds-racing-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Speeds website (Vercel build from the web/ folder).",
+  "description": "FurlongIQ website (Vercel build from the web/ folder).",
   "scripts": {
     "prebuild": "node scripts/prepare-figures.mjs",
     "build": "next build",

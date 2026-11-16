@@ -15,4 +15,3 @@ web/.next/
 .env
 .env.local
 .env.*.local
-VERCEL_ENV.txt
