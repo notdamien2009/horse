@@ -5,9 +5,9 @@ import { SiteShell } from "@/components/SiteShell";
 export const dynamic = "force-dynamic";
 
 // Home: jump straight to the next race to run today.
-export default function Home() {
-  const { date, isToday } = cardDate();
-  const id = nextRaceId(date, isToday);
+export default async function Home() {
+  const { date, isToday } = await cardDate();
+  const id = await nextRaceId(date, isToday);
   if (id != null) redirect(`/race/${id}`);
   return (
     <SiteShell activeId={null}>

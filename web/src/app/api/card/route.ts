@@ -3,7 +3,7 @@ import { card, cardDate } from "@/lib/racing";
 
 export const dynamic = "force-dynamic";
 
-export function GET(req: NextRequest) {
-  const date = req.nextUrl.searchParams.get("date") ?? cardDate().date;
-  return NextResponse.json(card(date));
+export async function GET(req: NextRequest) {
+  const date = req.nextUrl.searchParams.get("date") ?? (await cardDate()).date;
+  return NextResponse.json(await card(date));
 }

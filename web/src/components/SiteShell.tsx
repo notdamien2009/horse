@@ -1,43 +1,38 @@
-import { cardDate, card, figMeta } from "@/lib/racing";
+import { Database, TriangleAlert } from "lucide-react";
+import { cardDate, figMeta } from "@/lib/racing";
+import { meetingTabs } from "@/lib/summary";
 import { RaceTabs } from "./RaceTabs";
 import { ThemeToggle } from "./ThemeToggle";
 
-/** Header + one tab per race today (grouped by meeting) + footer. Server component: reads the SQLite files. */
-export function SiteShell({ activeId, children }: { activeId: number | null; children: React.ReactNode }) {
-  const { date, isToday } = cardDate();
-  const meetings = card(date);
-  const meta = figMeta();
-  const label = new Date(date + "T12:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+/** Sticky header (brand, date, figures, next-off countdown, meetings and race chips) + footer. Server component. */
+export async function SiteShell({ activeId, children }: { activeId: number | null; children: React.ReactNode }) {
+  const { date, isToday } = await cardDate();
+  const meetings = await meetingTabs(date);
+  const meta = await figMeta();
+  const label = new Date(date + "T12:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  const status = (
+    <>
+      {meta?.version ? (
+        <span className="figmeta" title={`Figure cache built ${meta.built ?? ""} · ${Number(meta.rows ?? 0).toLocaleString("en-GB")} runs · races to ${meta.max_date}`}>
+          <Database size={13} aria-hidden /> <b>{meta.version}</b>
+          <span className="hide-sm"> · {Number(meta.rows ?? 0).toLocaleString("en-GB")} runs · to {meta.max_date}</span>
+        </span>
+      ) : (
+        <span className="nofigs"><TriangleAlert size={14} aria-hidden /> NO FIGURES LOADED – stop the site and run npm run dev again</span>
+      )}
+      <ThemeToggle />
+    </>
+  );
   return (
     <>
-      <header className="top">
-        <div className="brand">Speeds <span>Today&apos;s Racing</span></div>
-        <div className="hdr-right">
-          <span>{label}{!isToday && meetings.length ? " (latest cards - run GET_TODAYS_CARDS.bat for today)" : ""}</span>
-          {meta?.version ? (
-            <span className="muted" title={`Figure cache built ${meta.built ?? ""}`}>
-              Figures: <b>{meta.version}</b> · {Number(meta.rows ?? 0).toLocaleString("en-GB")} runs · to {meta.max_date}
-            </span>
-          ) : (
-            <span className="nofigs">NO FIGURES LOADED - stop the site and run npm run dev again to build them</span>
-          )}
-          <ThemeToggle />
-        </div>
-      </header>
-      {meetings.length > 0 && (
-        <RaceTabs
-          isToday={isToday}
-          activeId={activeId}
-          meetings={meetings.map((m) => ({
-            meeting_id: m.meeting_id, course: m.course, going: m.going,
-            races: m.races.map((r) => ({ race_id: r.race_id, time: r.time, name: r.name })),
-          }))}
-        />
-      )}
+      <a className="skip" href="#main">Skip to race card</a>
+      <RaceTabs isToday={isToday} activeId={activeId} meetings={meetings} dateLabel={label} status={status}
+        stale={!isToday && meetings.length > 0} />
       <main id="main">{children}</main>
-      <footer className="muted">
-        Cards: Sporting Life (run GET_TODAYS_CARDS.bat to refresh). Figures: our speed figures, 9st Flat / 11st jumps base.
-        Colours are ranked within each race: green = best, red = worst.
+      <footer>
+        <span>Cards: Sporting Life (run <b>GET_TODAYS_CARDS.bat</b> to refresh)</span>
+        <span>Figures: our speed figures · 9st Flat / 11st jumps base</span>
+        <span className="legend">Ranked within each race <i aria-hidden /> <em>worst → best</em></span>
       </footer>
     </>
   );

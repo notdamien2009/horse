@@ -11,3 +11,8 @@ data/
 node_modules/
 web/.next/
 *.sqlite
+
+.env
+.env.local
+.env.*.local
+VERCEL_ENV.txt

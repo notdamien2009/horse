@@ -3,11 +3,16 @@
 // site/figcache.py. It only rebuilds when the CSV changes (first build takes about a minute), then checks
 // the cache really has figures in it. If anything is wrong it stops with a clear message instead of
 // starting a site with no figures. Emergency bypass: set SKIP_FIGURES=1.
+// On Vercel the site reads from Supabase, so this step is skipped (no local CSV / SQLite there).
 import { spawnSync } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DatabaseSync } from "node:sqlite";
+
+if (process.env.VERCEL) {
+  console.log("[figures] Vercel build — skipping local figure cache (the live site reads from Supabase).");
+  process.exit(0);
+}
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const data = path.join(root, "data");
@@ -44,10 +49,11 @@ for (const [cmd, ...pre] of tries) {
 }
 if (!ran) fail("Python was not found (tried python, py -3, python3). Install Python 3 with pandas, or add it to PATH.");
 
-// Check the cache with Node itself - the same way the site reads it.
+// Check the cache with Node itself - the same way the site reads it. Dynamic import so Vercel never loads node:sqlite.
 if (!existsSync(cache)) fail(`The builder finished but ${cache} was not created.`);
 let meta, n;
 try {
+  const { DatabaseSync } = await import("node:sqlite");
   const db = new DatabaseSync(cache, { readOnly: true });
   meta = Object.fromEntries(db.prepare("SELECT k, v FROM meta").all().map((r) => [r.k, r.v]));
   n = db.prepare("SELECT COUNT(*) AS n, COUNT(fig) AS f FROM figs").get();

@@ -12,7 +12,8 @@ export function ThemeToggle() {
     try { localStorage.setItem("speeds-theme", t); } catch {}
   };
   return (
-    <button className="icon-btn" onClick={flip} title="Light / dark" aria-label="Switch light / dark">
+    <button type="button" className="icon-btn" onClick={flip} title={theme === "light" ? "Dark mode" : "Light mode"}
+      aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}>
       {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
     </button>
   );

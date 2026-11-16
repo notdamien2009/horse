@@ -1,7 +1,8 @@
-SPEEDS RACING SITE - v1 (Next.js, same set-up as PetLife)
+SPEEDS RACING SITE - v3 (trend charts) (Next.js, same set-up as PetLife)
 =========================================================
-Today's UK & Irish race cards with form, our speed figures and ratings. Runs on this PC only:
+Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)
+To put the same site on Vercel (reading from the horse Supabase), see HOSTING.txt.
 
 FIRST TIME (from cmd in C:\Users\PC Deals\Desktop\Speeds)
   npm install                 - once; makes the node_modules folder (about a minute)
@@ -27,21 +28,46 @@ WHERE THINGS ARE
   package.json, RUN_SITE.bat     - in the Speeds folder (run npm from here)
   web\                           - the website (Next.js 16 App Router, React 19, TypeScript)
     web\src\app\                 - pages: / (jumps to the next race), /race/<id>, /api/meta, /api/card, /api/race/<id>
-    web\src\components\          - RaceTabs, RaceCard (sort, form toggle, colours), ThemeToggle, SiteShell
-    web\src\lib\                 - db.ts (reads the SQLite files with Node's built-in node:sqlite), racing.ts, colours.ts
+    web\src\components\          - RaceTabs (top bar), RaceCard (hero + runner cards), ThemeToggle, SiteShell
+    web\src\lib\                 - db.ts (reads the SQLite files with Node's built-in node:sqlite), racing.ts, summary.ts (race-tab summaries), colours.ts
     web\scripts\prepare-figures.mjs - the figure-cache step that runs before npm run dev / build
   tools\sl_cards.py              - Sporting Life card scraper (unchanged)
   site\figcache.py               - builds data\site_cache.sqlite (unchanged; the old Python site still works:
                                    python site\app.py)
   Data is read straight from data\cards.sqlite and data\site_cache.sqlite - nothing is copied into the site.
 
-READING A RACE CARD - same as before
-  One tab per race, grouped by meeting; faded tabs have already run. Rank / TOP RATED (gold) = Best 3
-  (average of the best 3 figures from the last 12 runs, Flat or jumps to match the race; 2yo scale for 2yo races).
-  Last / Avg 3 / Best / 2yo columns; colours ranked within the race: green = best, red = worst.
-  Form lines (last 6 runs) from Sporting Life with our beaten lengths and figure. "Sort by rating", "Hide form",
-  and the sun/moon button for light/dark.
-  Not in v1: odds & trading analysis and sectionals (placeholders on the page). No probabilities yet.
+READING A RACE CARD (v2 design)
+  Top bar (stays on screen): meetings as pills, then one chip per race with the time, runner count and the
+  top-rated horse + figure. "Next off" counts down to the next race; races already run fade out.
+  Race header: time, course and race name, key facts, "Ratings at a glance" bar chart (Best 3, ranked and
+  coloured), the TOP RATED horse with how many pounds clear it is, and the Sporting Life verdict.
+  Runner cards: rank badge, cloth (draw), silk, horse, age/sex/weight/OR, jockey / trainer, odds on the right.
+  Big coloured number = Best 3 (average of the best 3 figures from the last 12 runs, Flat or jumps to match
+  the race; 2yo scale in 2yo races), with a bar against the race's best and "+N clear" / "-N off top".
+  Last / Avg 3 / Best / 2yo chips underneath. Form chips (win green, placed amber) as before.
+  SPEED-FIGURE TREND CHART (v3) on every runner, last 8 runs, oldest left -> newest right (newest always in the
+  right-hand slot so the charts line up down the card; all charts in a race share one scale):
+    - points coloured on the race heat scale; the last figure is labelled
+    - runs with no figure (PU, F, UR, unplaced without a figure) = small hollow circle on the axis, the line
+      carries on past them as a dashed segment; finishing position under every point
+    - gold dashed line = today's top Best 3 in the race (2yo Best 3 in 2yo races, where the chart uses 2yo figures)
+    - trend line + badge: least-squares slope over the last 3-6 runs with a figure (same discipline as today -
+      jumps runs for a jumps race, Flat/AW runs for a Flat race - when there are 3+ of them):
+      "Rising +X/run" (green, +1.5 lb a run or more), "Falling -X/run" (red), "Steady" (grey)
+    - RIGHT RACE / WRONG RACE: a run is "today's conditions" (gold ring + gold column) when it was the same code
+      (Flat / AW / Hurdle / Chase / NHF), trip within 1f or 10%, similar going (within one step, e.g. Good to
+      Soft vs Good or Soft; AW with AW) and class within one (unknown class doesn't count against it).
+      Diamond = different code (e.g. a Flat run for a hurdler). The line above the cards spells out today's conditions.
+    - "Today's cond." chip = best figure the horse has run at today's conditions (whole history) and how many runs
+    - hover a point for date, course, trip, going, class, position, figure and which conditions matched
+  Click a card (or the arrow) to open its form: a big version of the chart, then the last 8 runs with a
+  "vs today" column (C = code, T = trip, G = going, Cl = class; gold rows = today's conditions).
+  Colours are ranked within the race: green = best, red = worst. Sun/moon button = light/dark.
+  Not yet: odds & trading analysis and sectionals (greyed "coming soon" panels). No probabilities.
 
 GIT
   If Speeds is a git repo, add these two lines to Speeds\.gitignore:  node_modules/   and   web/.next/
+
+HOSTING
+  See HOSTING.txt. Double-click UPLOAD_TO_SUPABASE.bat after today's cards and
+  figures are ready, to refresh the live site. Local npm run dev is unchanged.

@@ -3,6 +3,6 @@ import { datesAvailable, figMeta, localDate } from "@/lib/racing";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  return NextResponse.json({ today: localDate(), dates: datesAvailable(), figs: figMeta() ?? {} });
+export async function GET() {
+  return NextResponse.json({ today: localDate(), dates: await datesAvailable(), figs: (await figMeta()) ?? {} });
 }
