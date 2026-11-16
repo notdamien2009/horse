@@ -29,4 +29,5 @@ export async function qRacesFullByDate(date: string): Promise<Row[]> { return (a
 export async function qRunnersByDate(date: string): Promise<Row[]> { return (await store()).qRunnersByDate(date); }
 export async function qPredToday(date: string): Promise<Row[]> { return (await store()).qPredToday(date); }
 export async function qPace(dates: string[]): Promise<Row[]> { return (await store()).qPace(dates); }
+export async function qWinPct(date: string): Promise<Row[]> { return (await store()).qWinPct(date); }
 export async function cacheVersion(): Promise<string> { return (await store()).cacheVersion(); }

@@ -104,6 +104,11 @@ export async function qPredToday(date: string): Promise<Row[]> {
   return await q(CACHE, "SELECT * FROM pred_today WHERE date=?", [date]);
 }
 
+export async function qWinPct(date: string): Promise<Row[]> {
+  if (!(await hasTable(CACHE, "win_pct"))) return [];
+  return await q(CACHE, "SELECT * FROM win_pct WHERE date=?", [date]);
+}
+
 export async function qPace(dates: string[]): Promise<Row[]> {
   if (!dates.length || !(await hasTable(CACHE, "pace"))) return [];
   const uniq = [...new Set(dates)];

@@ -1,4 +1,4 @@
-FURLONGIQ RACING SITE - v8 (Next.js, same set-up as PetLife)
+FURLONGIQ RACING SITE - v10 (Next.js, same set-up as PetLife)
 =========================================================
 Today's UK & Irish race cards with form, our speed figures and ratings.
 http://localhost:3050   (port 3050 so it never clashes with PetLife / NOVA on 3000)
@@ -10,8 +10,9 @@ FIRST TIME (from cmd in C:\Users\PC Deals\Desktop\Speeds)
 EVERY DAY
   1. GET_TODAYS_CARDS.bat     - or: npm run cards   (downloads today's cards into data\cards.sqlite)
   2. PREDICT_TODAY.bat        - first time trains the 'predicted today' model (~2 minutes) and
-                                scores today's cards. Later days you can just run RUN_SITE.bat;
-                                it will re-score today's cards if the model is already there.
+                                scores today's cards, then scores form-only win % / fair odds.
+                                Later days you can just run RUN_SITE.bat; it will re-score if
+                                the models are already there. To retrain win %: WIN_PCT.bat.
   3. npm run dev              - or double-click RUN_SITE.bat, then open http://localhost:3050
      Before the site starts it builds/checks the figure cache (data\site_cache.sqlite) from
      data\speed_v3\speed_figures.csv (v2 if there is no v3). First time ~1 minute, then about a second.

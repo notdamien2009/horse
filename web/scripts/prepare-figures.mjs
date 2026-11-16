@@ -110,3 +110,25 @@ if (existsSync(paceScript) && existsSync(cache)) {
   }
   if (!paced) console.warn("[figures] pace labels skipped (Python not available). Run PACE_TRUE_RUN.bat when you can.");
 }
+
+// Form-only win % for today's cards. A miss must not stop the site.
+const winScript = path.join(root, "tools", "win_pct.py");
+const hasWinModel = existsSync(path.join(root, "data", "predict_today", "win_pct_model.json"));
+if (existsSync(winScript) && hasWinModel) {
+  let won = false;
+  for (const [cmd, ...pre] of tries) {
+    const r = spawnSync(cmd, [...pre, "-u", winScript, "--score-only"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    if (r.error?.code === "ENOENT") continue;
+    if (r.status === 0) {
+      const out = (r.stdout || "").trim().split("\n").filter(Boolean);
+      const last = out[out.length - 1] || "scored today's win %";
+      console.log(`[figures] win %: ${last.replace(/^\[?figures\] ?/, "")}`);
+      won = true;
+    } else {
+      const err = (r.stderr || r.stdout || "").trim().split("\n").slice(-4).join(" | ");
+      console.warn(`[figures] win-% score skipped: ${err || "exit " + r.status}`);
+    }
+    break;
+  }
+  if (!won) console.warn("[figures] win-% score skipped (Python not available). Run WIN_PCT.bat when you can.");
+}

@@ -32,6 +32,9 @@ PACE_COLS = [
     "fig_rel", "reason", "source", "fsp", "field_def", "n_field", "horses",
     "fig_race_id", "rtv_race_id",
 ]
+WIN_COLS = [
+    "ride_id", "race_id", "date", "horse_norm", "horse", "win_pct", "fair_odds", "win_rank",
+]
 CARD_ORDER = ("meetings", "races", "runners", "prev_runs", "scrape_log")
 BATCH = 800
 
@@ -91,7 +94,7 @@ def table_exists(con: sqlite3.Connection, name: str) -> bool:
     return con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)).fetchone() is not None
 
 
-def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict], list[dict]]:
+def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict], list[dict], list[dict]]:
     cards = connect(ROOT / "data" / "cards.sqlite")
     cache = connect(ROOT / "data" / "site_cache.sqlite")
     card_data = {
@@ -105,7 +108,8 @@ def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict
     meta = clean_meta(rows(cache, "SELECT k, v FROM meta"))
     preds = rows(cache, "SELECT " + ", ".join(PRED_COLS) + " FROM pred_today", PRED_COLS) if table_exists(cache, "pred_today") else []
     pace = rows(cache, "SELECT " + ", ".join(PACE_COLS) + " FROM pace", PACE_COLS) if table_exists(cache, "pace") else []
-    return card_data, figs, meta, preds, pace
+    wins = rows(cache, "SELECT " + ", ".join(WIN_COLS) + " FROM win_pct", WIN_COLS) if table_exists(cache, "win_pct") else []
+    return card_data, figs, meta, preds, pace, wins
 
 
 def request(method: str, url: str, key: str, body: bytes | None = None, extra: dict | None = None) -> tuple[int, str]:
@@ -237,7 +241,7 @@ CARD_TYPES = {
 }
 
 
-def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], meta: list[dict], preds: list[dict] | None = None, pace: list[dict] | None = None) -> None:
+def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], meta: list[dict], preds: list[dict] | None = None, pace: list[dict] | None = None, wins: list[dict] | None = None) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     for f in dest.glob("*.sql"):
         f.unlink()
@@ -282,6 +286,14 @@ def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], met
         slim = [{k: row.get(k) for k in pace_types} for row in pace]
         (dest / f"{n:03d}_pace.sql").write_text(sql_insert_json("pace", slim, pace_types), encoding="utf-8")
         n += 1
+    if wins:
+        win_types = {
+            "ride_id": "bigint", "race_id": "bigint", "date": "date", "horse_norm": "text",
+            "horse": "text", "win_pct": "real", "fair_odds": "real", "win_rank": "smallint",
+        }
+        slim = [{k: row.get(k) for k in win_types} for row in wins]
+        (dest / f"{n:03d}_win_pct.sql").write_text(sql_insert_json("win_pct", slim, win_types), encoding="utf-8")
+        n += 1
     per = 12000
     tag = "FIGTSV"
     for i in range(0, len(figs), per):
@@ -299,14 +311,14 @@ def main() -> None:
     parser.add_argument("--dump-sql", metavar="DIR", help="Write SQL batches instead of uploading.")
     args = parser.parse_args()
 
-    card_data, figs, meta, preds, pace = load_all()
+    card_data, figs, meta, preds, pace, wins = load_all()
     print(f"Loaded cards: {len(card_data['meetings'])} meetings, {len(card_data['races'])} races, "
           f"{len(card_data['runners'])} runners, {len(card_data['prev_runs'])} form runs")
     print(f"Loaded figures: {len(figs):,} rows, {len(meta)} meta keys, {len(preds)} predicted-today rows, "
-          f"{len(pace):,} pace rows")
+          f"{len(pace):,} pace rows, {len(wins)} win-% rows")
 
     if args.dump_sql:
-        dump_sql(Path(args.dump_sql), card_data, figs, meta, preds, pace)
+        dump_sql(Path(args.dump_sql), card_data, figs, meta, preds, pace, wins)
         return
 
     env = load_env()
@@ -349,6 +361,16 @@ def main() -> None:
             print("  it (form runs just will not show precomputed pace badges).")
         else:
             print(f"  pace skipped ({status} {text[:200]}). The live site will hide pace badges.")
+    if wins:
+        status, text = request("DELETE", f"{base}/rest/v1/win_pct?date=gte.2000-01-01", key, extra={"Prefer": "return=minimal"})
+        if status in {200, 204} or (200 <= status < 300):
+            post_batches(base, "win_pct", key, wins)
+        elif status == 404:
+            print("  win_pct table is not on Supabase yet. Win percentages are already in fig_meta,")
+            print("  so the live site will still show them. To add the table, run tools/win_pct.sql")
+            print("  in the horse Supabase SQL editor, then re-run this upload.")
+        else:
+            print(f"  win_pct skipped ({status} {text[:200]}). Win percentages are already in fig_meta.")
     print("Done. The Vercel site will pick this up on the next page load (no redeploy needed).")
 
 

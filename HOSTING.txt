@@ -38,6 +38,10 @@ horse Supabase project (tkbhjbpiiierhjhjfjdd, Ireland). It does not use Nova.
    For pace badges on the live site, run tools/pace.sql once in the same SQL editor,
    then re-run the upload. The site works without that table (form runs just have no
    precomputed pace badge; comment fallback still works).
+   For win % and fair odds on the live site, run tools/win_pct.sql once in the same
+   SQL editor, then re-run the upload (WIN_PCT.bat or PREDICT_TODAY.bat scores today's
+   cards first). The numbers are also stored in fig_meta, so the site can still show
+   them if the table is missing.
 
 5. Push these site changes to GitHub (from the Speeds folder / horse repo)
      git add -A

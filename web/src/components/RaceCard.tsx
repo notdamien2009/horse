@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import type { Race, Runner, FormRun, Conditions, ClassChange, PaceInfo } from "@/lib/racing";
 import { ChartLegend, FigChart, FitTags, TrendBadge, chartRuns, runVal, trendOf } from "./FigChart";
 import { f0, hueStyle, rankHue, scaleHue, type HueFn } from "@/lib/colours";
+import { toDecimalOdds } from "@/lib/odds";
 
 const SEC_KEYS = ["last", "avg3", "best", "best2yo"] as const;
 const SEC_LABEL: Record<(typeof SEC_KEYS)[number], [string, string]> = {
@@ -64,7 +65,7 @@ function FormChips({ form }: { form: string | null }) {
 }
 
 export function RaceCard({ race: r }: { race: Race }) {
-  const [sort, setSort] = useState<"rank" | "card">("rank");
+  const [sort, setSort] = useState<"rank" | "win" | "card">("rank");
   const [open, setOpen] = useState<Set<number>>(() => new Set());
   const juv = r.rank_basis.startsWith("2yo");
   const head = (h: Runner) => h.pred;
@@ -99,9 +100,18 @@ export function RaceCard({ race: r }: { race: Race }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [r]);
 
-  const list = sort === "rank"
-    ? [...r.runners].sort((a, b) => Number(a.nr) - Number(b.nr) || (a.rank ?? 99) - (b.rank ?? 99) || (a.cloth ?? 0) - (b.cloth ?? 0))
-    : r.runners;
+  const list = sort === "card" ? r.runners : [...r.runners].sort((a, b) => {
+    const nr = Number(a.nr) - Number(b.nr);
+    if (nr) return nr;
+    if (sort === "win") {
+      const aw = a.win_pct, bw = b.win_pct;
+      if (aw == null && bw == null) return (a.cloth ?? 0) - (b.cloth ?? 0);
+      if (aw == null) return 1;
+      if (bw == null) return -1;
+      return bw - aw || (a.cloth ?? 0) - (b.cloth ?? 0);
+    }
+    return (a.rank ?? 99) - (b.rank ?? 99) || (a.cloth ?? 0) - (b.cloth ?? 0);
+  });
   const allOpen = open.size > 0 && open.size >= r.runners.filter((h) => !h.nr).length;
   const toggle = (id: number) => setOpen((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const setAll = () => setOpen(allOpen ? new Set() : new Set(r.runners.filter((h) => !h.nr).map((h) => h.ride_id)));
@@ -163,7 +173,7 @@ export function RaceCard({ race: r }: { race: Race }) {
                 <span className="leader-nums">
                   <span className="leader-fig">{f0(head(leader))}</span>
                   {m.gap != null && <span className={`clear${m.gap >= 5 ? " wide" : ""}`}>{m.gap > 0 ? `+${m.gap} clear` : "joint top"}</span>}
-                  {(leader.odds || leader.forecast_odds) && <span className="leader-odds">{leader.odds || leader.forecast_odds}</span>}
+                  {(leader.odds || leader.forecast_odds) && <span className="leader-odds">{toDecimalOdds(leader.odds || leader.forecast_odds)}</span>}
                 </span>
               </a>
             ) : <div className="leader none">No ratings for this race yet.</div>}
@@ -176,6 +186,9 @@ export function RaceCard({ race: r }: { race: Race }) {
         <div className="seg" role="group" aria-label="Sort runners">
           <button type="button" className={sort === "rank" ? "on" : ""} aria-pressed={sort === "rank"} onClick={() => setSort("rank")}>
             <ArrowDownWideNarrow size={14} aria-hidden /> By rating
+          </button>
+          <button type="button" className={sort === "win" ? "on" : ""} aria-pressed={sort === "win"} onClick={() => setSort("win")}>
+            <Gauge size={14} aria-hidden /> By win %
           </button>
           <button type="button" className={sort === "card" ? "on" : ""} aria-pressed={sort === "card"} onClick={() => setSort("card")}>
             <ListOrdered size={14} aria-hidden /> Card order
@@ -343,7 +356,11 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
           </div>
         </div>
         <div className="c-odds">
-          <span className="odds">{odds || "–"}</span>
+          <span className={`win-pct${x.win_pct == null ? " na" : ""}`} title={x.win_pct == null ? "No form-only win probability for this runner" : `Form-only win chance ${x.win_pct.toFixed(1)}%. Fair odds ${x.fair_odds != null ? x.fair_odds.toFixed(2) : "–"}. Compare with the live price: if the price is bigger than our fair odds, it may be value.`}>
+            {x.win_pct == null ? "–" : `${x.win_pct.toFixed(0)}%`}
+          </span>
+          <small className="fair">{x.fair_odds != null ? <>Fair <b>{x.fair_odds.toFixed(2)}</b></> : "Fair –"}</small>
+          <span className="odds">{odds ? toDecimalOdds(odds) : "–"}</span>
           <small>{x.odds ? "odds" : x.forecast_odds ? "forecast" : ""}</small>
         </div>
         <div className="c-exp">
@@ -429,7 +446,7 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
                 <td className="n">{f.cls}</td>
                 <td className="n"><span className={`pos ${posClass(f.pos)}`}>{f.pos || "–"}{f.ran ? <small>/{f.ran}</small> : null}</span></td>
                 <td className="n">{f.btn == null ? "" : f.pos === "1" ? "–" : f.btn}</td>
-                <td className="n">{f.sp || ""}</td>
+                <td className="n">{f.sp ? toDecimalOdds(f.sp) : ""}</td>
                 <td className="n">{f.or ?? ""}</td>
                 <td className={`n${unsure ? ` fig-unsure ${f.pace!.figRel}` : ""}`} title={figTitle}>
                   <HeatPill v={v} hue={hue(v)} title={figTitle} />

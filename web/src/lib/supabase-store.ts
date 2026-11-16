@@ -151,6 +151,17 @@ export async function qPredToday(date: string): Promise<Row[]> {
   }
 }
 
+export async function qWinPct(date: string): Promise<Row[]> {
+  try {
+    const rows = await pages((from, to) =>
+      sb().from("win_pct").select("*").eq("date", date).range(from, to),
+    );
+    return rows.map((r) => normRow(r));
+  } catch {
+    return [];
+  }
+}
+
 export async function qPace(dates: string[]): Promise<Row[]> {
   const uniq = [...new Set(dates.filter(Boolean))];
   if (!uniq.length) return [];

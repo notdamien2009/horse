@@ -1,6 +1,6 @@
 import "server-only";
 import {
-  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate,
+  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate, qWinPct,
   type Row,
 } from "./store";
 import { bundledPayload, parsePayload, predictFromFigs, storedPreds, type Pred, type PredPayload } from "./predict";
@@ -40,6 +40,7 @@ export type Runner = Row & {
   ratings: Ratings; form_runs: FormRun[]; nr: boolean; rank: number | null; cond_best: CondBest;
   class_change: ClassChange | null; or_delta: number | null;
   pred: number | null; pred_lo: number | null; pred_hi: number | null;
+  win_pct: number | null; fair_odds: number | null;
 };
 export type Race = Row & {
   race_id: number; time: string; course: string; name: string; date: string; family: string;
@@ -374,7 +375,8 @@ async function withPace(races: Race[]): Promise<Race[]> {
   return races;
 }
 
-type PredCtx = { payload: PredPayload | null; stored: Map<number, Pred> };
+type WinRow = { win_pct: number; fair_odds: number | null };
+type PredCtx = { payload: PredPayload | null; stored: Map<number, Pred>; win: Map<number, WinRow> };
 
 async function loadPredContext(date: string): Promise<PredCtx> {
   const metaRows = await qFigMeta();
@@ -395,7 +397,33 @@ async function loadPredContext(date: string): Promise<PredCtx> {
       });
     }
   } catch { /* pred_today table is optional */ }
-  return { payload, stored };
+  const win = new Map<number, WinRow>();
+  try {
+    const raw = meta.win_pct_today;
+    if (raw) {
+      const arr = JSON.parse(String(raw));
+      if (Array.isArray(arr)) {
+        for (const row of arr) {
+          if (!row || row.win_pct == null || row.ride_id == null) continue;
+          if (row.date && String(row.date).slice(0, 10) !== date) continue;
+          win.set(Number(row.ride_id), {
+            win_pct: Number(row.win_pct),
+            fair_odds: row.fair_odds != null ? Number(row.fair_odds) : null,
+          });
+        }
+      }
+    }
+  } catch { /* optional fig_meta fallback */ }
+  try {
+    for (const r of await qWinPct(date)) {
+      if (r?.win_pct == null) continue;
+      win.set(Number(r.ride_id), {
+        win_pct: Number(r.win_pct),
+        fair_odds: r.fair_odds != null ? Number(r.fair_odds) : null,
+      });
+    }
+  } catch { /* win_pct table is optional */ }
+  return { payload, stored, win };
 }
 
 function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>, figsByHorse: Map<string, Row[]>, ctx: PredCtx): Race {
@@ -416,6 +444,7 @@ function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>,
     h.nr = !["RUNNER", ""].includes(String(h.status ?? "RUNNER").toUpperCase());
     h.rank = null;
     h.pred = null; h.pred_lo = null; h.pred_hi = null;
+    h.win_pct = null; h.fair_odds = null;
   }
   const act = runners.filter((h) => !h.nr);
   const juv = String(race.age_band ?? "").toUpperCase().startsWith("2YO") && act.some((h) => h.ratings.best3_2yo != null);
@@ -433,6 +462,9 @@ function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>,
     h.pred = p?.pred ?? null;
     h.pred_lo = p?.lo ?? null;
     h.pred_hi = p?.hi ?? null;
+    const w = ctx.win.get(h.ride_id);
+    h.win_pct = w?.win_pct ?? null;
+    h.fair_odds = w?.fair_odds ?? null;
     delete (h as Row)._figs;
   }
   const key = (h: Runner) => h.pred;

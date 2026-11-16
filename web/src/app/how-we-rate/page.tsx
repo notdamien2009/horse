@@ -12,7 +12,7 @@ export default function HowWeRatePage() {
           <p className="guide-kicker">FurlongIQ</p>
           <h1>How we rate the horses</h1>
           <p className="guide-lead">
-            A plain-English guide to the figures, the predicted-today rating, pace labels, and the flags on the race card — and what we&apos;re building next.
+            A plain-English guide to the figures, the predicted-today rating, form-only win %, pace labels, and the flags on the race card — and what we&apos;re building next.
           </p>
         </header>
 
@@ -173,6 +173,29 @@ export default function HowWeRatePage() {
             Hover the badge for a one-line reason, for example &quot;Field ran 14 below their usual; finish 108% (sprint)&quot;.
             Unreliable figures are drawn with a dashed, faded style on the form and as a dashed point on the trend chart.
             This first version does not yet change the Predicted today weights — it shows you which past runs to trust.
+          </p>
+        </section>
+
+
+        <section>
+          <h2>Win % and fair odds</h2>
+          <p>
+            Each runner also has a <b>win percentage</b> — our estimate of how likely it is to win this race,
+            from form only. The figures in a race are turned into probabilities that <b>add up to 100%</b>.
+            We use the predicted-today figure, how far it sits behind the top of the race, Best of the last 3,
+            the last figure, class and official-rating moves, days since the last run, field size, and a
+            reliability adjustment when a recent figure came from a slow or suspicious pace. Starting prices
+            and Betfair prices are not used to make the number.
+          </p>
+          <p>
+            Next to the win % is a <b>fair odds</b> in decimal form (for example 5.50, which is the same as 9/2).
+            Compare it with the live price: <b>if the price is bigger than our fair odds, it may be value</b>.
+            That is a guide, not a ready-made bet — prices were held back and only used afterwards to check
+            whether the rule would have paid on a later year of results.
+          </p>
+          <p>
+            You can sort the card <b>By win %</b>. All odds on the site (the card, the form table, and the
+            headline price) are shown as decimals: 5/2 becomes 3.50, evens becomes 2.00.
           </p>
         </section>
 

@@ -14,6 +14,14 @@ where py >nul 2>&1 && (
   python tools\predict_today.py %*
 )
 echo.
+echo Scoring form-only win probabilities for today's cards...
+where py >nul 2>&1 && (
+  py -3 tools\win_pct.py --score-only %*
+) || (
+  python tools\win_pct.py --score-only %*
+)
+echo.
 echo Finished. Full write-up: data\predict_today\summary.txt
+echo Win %% write-up: data\predict_today\win_pct_summary.txt
 echo Restart the site with RUN_SITE.bat to see the new ranking.
 pause
