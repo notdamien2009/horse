@@ -27,7 +27,7 @@ import requests
 
 from sporting_life_results_pilot import (
     BASE, RESULT_PATH, RACE_FIELDS, RUNNER_FIELDS, clean,
-    race_links, parse_race as legacy_header_parser, fetch,
+    race_links, parse_race as legacy_header_parser, fetch as _fetch_once,
 )
 
 INDEX_TIME = re.compile(r'^\s*(\d{1,2}:\d{2})\b')
@@ -66,6 +66,28 @@ def check_access(html):
     head = html[:5000]
     if any(mark.lower() in head.lower() for mark in BLOCKED_MARKERS):
         raise AccessStopped('Access challenge/denial detected. Collection stopped; no bypass attempted.')
+
+
+TRANSIENT_HTTP = (500, 502, 503, 504)
+RETRY_WAITS = (30, 90, 180)
+
+
+def fetch(session, url):
+    """Fetch with patient retries for brief server/network faults only.
+    401/403/429 (access control / rate limit) still stop immediately."""
+    for attempt, wait in enumerate((0,) + RETRY_WAITS):
+        if wait:
+            print(f'  transient error, retry {attempt}/{len(RETRY_WAITS)} in {wait}s: {url}', flush=True)
+            time.sleep(wait)
+        try:
+            return _fetch_once(session, url)
+        except requests.HTTPError as err:
+            code = getattr(err.response, 'status_code', None)
+            if code not in TRANSIENT_HTTP or attempt == len(RETRY_WAITS):
+                raise
+        except (requests.ConnectionError, requests.Timeout):
+            if attempt == len(RETRY_WAITS):
+                raise
 
 
 class AccessStopped(Exception):
@@ -448,7 +470,25 @@ def collect_with_connection(args, conn):
                 check_access(html)
                 links=parse_index(html,day)
                 if not links:
-                    raise ValueError('No race links; date could be empty or page layout could have changed. NOT marked complete.')
+                    # NO-RACING RULE: an empty results page is usually a day with no fixtures
+                    # (abandoned for weather, Christmas Day). Log it and move on, unless several
+                    # empty days in a row suggest the page layout changed.
+                    prev = conn.execute("SELECT race_date,last_error FROM days WHERE race_date<? ORDER BY race_date DESC LIMIT 3",(day,)).fetchall()
+                    if len(prev)==3 and all((r['last_error'] or '').startswith('NO_RACING') for r in prev):
+                        raise ValueError('No race links for 4 days in a row; page layout may have changed. NOT marked complete.')
+                    register_index(conn,day,[])
+                    with conn:
+                        conn.execute("UPDATE days SET last_error=? WHERE race_date=?",('NO_RACING: no races listed, probable abandonment or no fixtures',day))
+                    log=Path('data')/'backfill_logs'/'no_racing_days.csv'
+                    new_file=not log.exists()
+                    with log.open('a',encoding='utf-8') as f:
+                        if new_file: f.write('race_date,logged_utc,note\n')
+                        f.write(f'{day},{utcnow()},no races listed - probable abandonment or no fixtures\n')
+                    print(f'{day}: NO RACING listed (probable abandonment/no fixtures) - skipped, logged to {log}')
+                    day_count+=1
+                    if args.live:
+                        time.sleep(args.delay)
+                    continue
                 register_index(conn,day,links)
                 print(f'{day}: indexed {len(links)} race links')
                 day_count+=1

@@ -1,0 +1,32 @@
+{
+  "name": "speeds-racing-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Speeds - today's UK & Irish race cards with form, speed figures and ratings. Runs locally.",
+  "scripts": {
+    "predev": "node web/scripts/prepare-figures.mjs",
+    "dev": "next dev web -p 3050",
+    "prebuild": "node web/scripts/prepare-figures.mjs",
+    "build": "next build web",
+    "start": "next start web -p 3050",
+    "cards": "python tools/sl_cards.py",
+    "figures": "node web/scripts/prepare-figures.mjs",
+    "typecheck": "tsc --noEmit -p web"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "next": "16.4.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

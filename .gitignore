@@ -5,3 +5,9 @@ data/
 *.sqlite-shm
 *.sqlite-wal
 .venv/
+
+*.parquet
+*.zip
+node_modules/
+web/.next/
+*.sqlite
