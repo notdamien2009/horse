@@ -8,6 +8,13 @@ export function supabaseConfig(): { url: string; key: string } | null {
   return { url, key };
 }
 
+/**
+ * The live Vercel site reads Supabase. On this PC we always read the local SQLite
+ * files, even if .env has SUPABASE_URL set for UPLOAD_TO_SUPABASE.bat.
+ * Set FURLONGIQ_USE_SUPABASE=1 only if you really want the local site to use Supabase.
+ */
 export function usingSupabase(): boolean {
-  return supabaseConfig() != null;
+  if (!supabaseConfig()) return false;
+  if (process.env.VERCEL) return true;
+  return process.env.FURLONGIQ_USE_SUPABASE === "1";
 }

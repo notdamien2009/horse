@@ -277,10 +277,21 @@ export function orChange(form: FormRun[], todayOr: number | null, todayCode: str
 
 
 
-/** 'Fontwell Park' / 'Fontwell', 'Market Rasen' / 'MarketRasen' -> same key as the pace table. */
+/** 'Fontwell Park' / 'Fontwell', 'Market Rasen' / 'MarketRasen', 'Gowran Park' / 'GowranPark' -> same key. */
 export function normCourse(name: string | null | undefined): string {
-  const n = String(name ?? "").toLowerCase().replace(/\(.*?\)/g, " ");
-  return n.split(/[^a-z]+/).filter((w) => w && !["park", "the", "downs", "city", "racecourse", "aw"].includes(w)).join("");
+  let n = String(name ?? "").toLowerCase().replace(/\(.*?\)/g, " ");
+  n = n.split(/[^a-z]+/).filter((w) => w && !["park", "the", "downs", "city", "racecourse", "aw"].includes(w)).join("");
+  // 'GowranPark' comes through as one word; still drop a trailing park/downs/city.
+  return n.replace(/(park|downs|city|racecourse)$/, "");
+}
+
+const dayOf = (d: unknown) => String(d ?? "").slice(0, 10);
+
+function courseKeys(name: string | null | undefined): string[] {
+  const cn = normCourse(name);
+  const keys = [cn, String(name ?? "").toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z]/g, "")];
+  if (cn) keys.push(cn + "park");
+  return [...new Set(keys.filter(Boolean))];
 }
 
 const SLOW_CMT = /slowly[\s-]?run|sedate(?:ly)?(?:\s+run|\s+pace)?|false pace|no pace|lack of pace|crawled|crawling early|steadily[\s-]?run|steady(?:ish)? pace|dictated (?:a |the )?(?:slow |steady )?pace|set (?:a |the )?modest pace|uncontested (?:lead|pace)/i;
@@ -304,20 +315,23 @@ export function commentPace(comment: string | null | undefined): PaceInfo | null
 }
 
 function rowToPace(r: Row): PaceInfo {
-  const label = r.label === "slow" || r.label === "steady" || r.label === "true" ? r.label : "unknown";
+  let label: PaceInfo["label"] = r.label === "slow" || r.label === "steady" || r.label === "true" ? r.label : "unknown";
   const figRel = r.fig_rel === "low" || r.fig_rel === "suspect" ? r.fig_rel : "ok";
+  const fieldDef = r.field_def != null && Number.isFinite(Number(r.field_def)) ? Number(r.field_def) : null;
+  // A mid-range field check is still evidence: the race was not a slow-run or a soft standard.
+  if (label === "unknown" && fieldDef != null) label = "true";
   return {
     label, figRel,
     reason: String(r.reason ?? ""),
     source: String(r.source ?? ""),
     fsp: r.fsp != null && Number.isFinite(Number(r.fsp)) ? Number(r.fsp) : null,
-    fieldDef: r.field_def != null && Number.isFinite(Number(r.field_def)) ? Number(r.field_def) : null,
+    fieldDef,
   };
 }
 
 function matchPace(run: FormRun, horseNorm: string, list: Row[]): PaceInfo | null {
-  const cn = normCourse(run.course);
-  const day = list.filter((r) => String(r.date).slice(0, 10) === run.date && r.course_norm === cn);
+  const keys = courseKeys(run.course);
+  const day = list.filter((r) => dayOf(r.date) === dayOf(run.date) && keys.includes(String(r.course_norm ?? "")));
   const pickFrom = (rows: Row[]): Row | null => {
     let pick = rows;
     if (pick.length > 1 && run.dist_f != null) {
@@ -350,7 +364,10 @@ function attachPace(race: Race, rows: Row[]): void {
 }
 
 async function withPace(races: Race[]): Promise<Race[]> {
-  const dates = [...new Set(races.flatMap((r) => r.runners.flatMap((h) => h.form_runs.map((f) => f.date))))];
+  const dates = [...new Set(
+    races.flatMap((r) => r.runners.flatMap((h) => h.form_runs.map((f) => dayOf(f.date))))
+      .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
+  )];
   let rows: Row[] = [];
   try { rows = await qPace(dates); } catch { rows = []; }
   for (const r of races) attachPace(r, rows);

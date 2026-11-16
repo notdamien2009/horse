@@ -6,7 +6,7 @@ if not exist ".env" (
   echo.
   echo Missing .env in the Speeds folder.
   echo Copy .env.example to .env and paste your horse Supabase URL and service role key.
-  echo The service role key is in Supabase: Project Settings - API - service_role  (secret).
+  echo The service role key is in Supabase: Project Settings - API - service_role ^(secret^).
   echo Do not put that key in Vercel or in git.
   echo.
   pause
