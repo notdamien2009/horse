@@ -709,8 +709,22 @@ def should_skip(fig_sig: dict, sec_sig: dict, force: bool) -> bool:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build race pace / true-run labels into site_cache.sqlite.")
     parser.add_argument("--force", action="store_true", help="Rebuild even if inputs have not changed.")
+    parser.add_argument("--v1", action="store_true", help="Force the old v1 labels even if sectionals v12 exists.")
     args = parser.parse_args()
     t0 = time.time()
+
+    # Sectionals v12 (SECTIONALS_V12.bat) supersedes v1: if its race pace file exists, rebuild the
+    # pace table from it (fast; races without sectionals still get the v1 field check).
+    if not args.v1 and (DATA / "sectionals_v12" / "race_pace.csv.gz").is_file():
+        try:
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            import sectionals_v12
+            sectionals_v12.pace_only(force=args.force)
+            return
+        except SystemExit:
+            raise
+        except Exception as e:  # never leave the site without pace labels
+            log(f"Sectionals v12 pace failed ({e}); falling back to v1 labels.")
 
     sec_races, bands, sec_sig = load_sectionals()
     # Peek at cache meta first so we can skip the heavier field pass when possible.

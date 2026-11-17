@@ -1,10 +1,11 @@
 "use client";
 import {
-  ArrowDownWideNarrow, ChevronDown, ChevronsDownUp, ChevronsUpDown, Crown, Gauge, ListOrdered, Lock, Timer, TrendingUp,
+  ArrowDownWideNarrow, ChevronDown, ChevronsDownUp, ChevronsUpDown, Crown, Gauge, ListOrdered, Lock, TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Race, Runner, FormRun, Conditions, ClassChange, PaceInfo } from "@/lib/racing";
 import { ChartLegend, FigChart, FitTags, TrendBadge, chartRuns, runVal, trendOf } from "./FigChart";
+import { SectionalChart, hasSectionals } from "./SectionalChart";
 import { f0, hueStyle, rankHue, scaleHue, type HueFn } from "@/lib/colours";
 import { toDecimalOdds } from "@/lib/odds";
 
@@ -219,11 +220,6 @@ export function RaceCard({ race: r }: { race: Race }) {
           <div><b>Odds &amp; trading analysis</b><span>Needs backtesting first.</span></div>
           <span className="soon-tag"><Lock size={11} aria-hidden /> Coming soon</span>
         </div>
-        <div className="soon-card">
-          <Timer size={18} aria-hidden />
-          <div><b>Sectionals</b><span>Pace labels are on the form already. Full running-style notes still to come.</span></div>
-          <span className="soon-tag"><Lock size={11} aria-hidden /> Coming soon</span>
-        </div>
       </div>
     </div>
   );
@@ -326,6 +322,12 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
           </div>
           <FigChart runs={x.form_runs} juv={juv} lo={m.cLo} hi={m.cHi} hue={m.chartHue} refV={m.top} refLabel={refLabel}
             today={cond} trend={trend} />
+          {hasSectionals(x.sectionals) && (
+            <div className="sec-mini">
+              <span className="sec-mini-lbl">Sectionals vs par</span>
+              <SectionalChart runs={x.sectionals} size="sm" />
+            </div>
+          )}
         </div>
         <div className="c-rating" style={hueStyle(hue)}>
           <div className="headline">
@@ -390,6 +392,15 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
             <FigChart runs={x.form_runs} juv={juv} lo={m.cLo} hi={m.cHi} hue={m.chartHue} refV={m.top}
               refLabel={refLabel} today={cond} trend={trend} size="lg" />
           </div>
+          {hasSectionals(x.sectionals) && (
+            <div className="bigchart">
+              <div className="bigchart-head">
+                <span className="sec-title">Sectional profile, last {Math.min(3, x.sectionals.filter((s) => s.sectors?.length).length)} run{x.sectionals.filter((s) => s.sectors?.length).length === 1 ? "" : "s"}</span>
+                <span className="muted small">% vs section par · last run solid, earlier runs faint · finish on the right</span>
+              </div>
+              <SectionalChart runs={x.sectionals} size="lg" />
+            </div>
+          )}
           <FormTable runs={x.form_runs} hue={m.chartHue} juv={juv} />
         </div>
       )}
@@ -398,7 +409,7 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
 }
 
 const PACE_LBL: Record<PaceInfo["label"], string> = {
-  true: "True run", steady: "Steady", slow: "Slow-run (sprint finish)", unknown: "Unknown",
+  true: "True run", steady: "Steady", slow: "Slow-run (sprint finish)", "fast-early": "Fast-early", unknown: "Unknown",
 };
 const REL_LBL: Record<PaceInfo["figRel"], string> = {
   ok: "OK", low: "Low (pace-affected)", suspect: "Suspect high",
@@ -409,7 +420,7 @@ export function PaceBadge({ p }: { p: PaceInfo | null }) {
     const why = p?.reason ? `Not enough to label the pace. ${p.reason}` : "Not enough evidence to label the pace of this race";
     return <span className="pace unk" title={why}>–</span>;
   }
-  const txt = p.label === "slow" ? "Slow-run" : p.label === "true" ? "True run" : "Steady";
+  const txt = p.label === "slow" ? "Slow-run" : p.label === "true" ? "True run" : p.label === "fast-early" ? "Fast-early" : "Steady";
   const title = `${PACE_LBL[p.label]}. Figure: ${REL_LBL[p.figRel]}. ${p.reason}`;
   return <span className={`pace ${p.label}${p.figRel !== "ok" ? ` ${p.figRel}` : ""}`} title={title}>{txt}</span>;
 }
@@ -424,6 +435,8 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
             <th>Date</th><th>Course</th><th>Dist</th><th>Going</th><th>Type</th><th className="n">Cl</th>
             <th className="n">Pos</th><th className="n">Btn</th><th className="n">SP</th><th className="n">OR</th>
             <th className="n" title={juv ? "Figure on the 2yo scale (as in the chart)" : undefined}>{juv ? "2yo Fig" : "Fig"}</th>
+            <th title="Pace-adjusted figure: the raw figure plus a credit or debit for how the race was run.">Adj</th>
+            <th title="Finishing speed as a percentage of the race average. Above 100% means the horse finished more strongly than the field.">FSP</th>
             <th title="Was this a truly run race, or a slow-run sprint finish? Hover for why.">Pace</th>
             <th>vs today</th><th>Comment</th>
           </tr>
@@ -451,6 +464,8 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
                 <td className={`n${unsure ? ` fig-unsure ${f.pace!.figRel}` : ""}`} title={figTitle}>
                   <HeatPill v={v} hue={hue(v)} title={figTitle} />
                 </td>
+                <td className="n" title={f.fig_adj == null ? undefined : "Pace-adjusted figure"}>{f.fig_adj == null ? "" : f0(f.fig_adj)}</td>
+                <td className="n" title={f.fin_speed_pct == null ? undefined : "Finishing speed %"}>{f.fin_speed_pct == null ? "" : `${f.fin_speed_pct.toFixed(1)}%`}</td>
                 <td><PaceBadge p={f.pace} /></td>
                 <td><FitTags f={f} compact /></td>
                 <td className="cmt" title={f.comment || ""}><div>{f.comment || ""}</div></td>

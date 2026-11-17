@@ -195,9 +195,15 @@ export function FigChart({ runs, juv, lo, hi, hue, refV, refLabel, today, size =
           {h.pace && h.pace.label !== "unknown" && (
             <div className="tip-pace">
               <span className={`pace ${h.pace.label}${h.pace.figRel !== "ok" ? ` ${h.pace.figRel}` : ""}`}>
-                {h.pace.label === "slow" ? "Slow-run" : h.pace.label === "true" ? "True run" : "Steady"}
+                {h.pace.label === "slow" ? "Slow-run" : h.pace.label === "true" ? "True run" : h.pace.label === "fast-early" ? "Fast-early" : "Steady"}
               </span>
               <span className="muted">{h.pace.reason}</span>
+            </div>
+          )}
+          {(h.fin_speed_pct != null || h.fig_adj != null) && (
+            <div className="tip-n">
+              {h.fin_speed_pct != null && <span className="muted">FSP {h.fin_speed_pct.toFixed(1)}%</span>}
+              {h.fig_adj != null && <span className="muted">Adj {f0(h.fig_adj)}</span>}
             </div>
           )}
           <FitTags f={h} />

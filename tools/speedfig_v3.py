@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 r"""
 Speed figures v3  --  v2 all-ages figures, plus a separate 2yo scale and running horse ratings.
 v2 (unchanged): small-sample standards shrunk + capped, BHA weight-for-age, course layouts
@@ -95,7 +95,7 @@ def wfa_lb(code, dist_f, age, date):
     return 0.0
 MARGINS = {"dht": 0.0, "nse": 0.05, "sh": 0.1, "shd": 0.1, "sht-hd": 0.1, "hd": 0.2, "snk": 0.25,
            "nk": 0.3, "dist": 30.0}
-FRAC = {"½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1/3, "⅔": 2/3, "⅛": 0.125}
+FRAC = {"Â½": 0.5, "Â¼": 0.25, "Â¾": 0.75, "â…“": 1/3, "â…”": 2/3, "â…›": 0.125}
 AW_GOINGS = {"standard", "standard to slow", "standard to fast", "slow", "fast"}
 AW_ONLY_COURSES = {"wolverhampton", "chelmsford", "dundalk"}   # no turf track at all
 NON_GOING_WORDS = {"rowley", "old course", "new course", "inner", "round", "outer", "straight"}
@@ -112,9 +112,9 @@ COMMON_COLUMNS = ["race_id", "date", "off_time", "course_raw", "distance_raw", "
 # Parsers
 # ----------------------------------------------------------------------------------------
 def parse_number_with_frac(s):
-    """'1¾' -> 1.75, '½' -> 0.5, '12' -> 12.0"""
+    """'1Â¾' -> 1.75, 'Â½' -> 0.5, '12' -> 12.0"""
     s = s.strip()
-    m = re.fullmatch(r"(\d*)([½¼¾⅓⅔⅛]?)", s)
+    m = re.fullmatch(r"(\d*)([Â½Â¼Â¾â…“â…”â…›]?)", s)
     if not m or (m.group(1) == "" and m.group(2) == ""):
         return None
     v = float(m.group(1)) if m.group(1) else 0.0
@@ -141,10 +141,10 @@ def parse_windist(s):
     return (parse_margin_token(m.group("m")), parse_margin_token(m.group("c")))
 
 def parse_distance_f(s):
-    """'5½f' -> 5.5 ; '1m2½f' -> 10.5 ; '2m' -> 16"""
+    """'5Â½f' -> 5.5 ; '1m2Â½f' -> 10.5 ; '2m' -> 16"""
     if not isinstance(s, str):
         return np.nan
-    m = re.fullmatch(r"\s*(?:(\d+)m)?\s*(?:(\d*)([½¼¾]?)f)?\s*", s)
+    m = re.fullmatch(r"\s*(?:(\d+)m)?\s*(?:(\d*)([Â½Â¼Â¾]?)f)?\s*", s)
     if not m or not any(m.groups()):
         return np.nan
     miles = int(m.group(1)) if m.group(1) else 0
@@ -245,7 +245,7 @@ def load_rbd(path, start=None, end=None):
         "horse": df["Horse"].astype(str),
         "age": pd.to_numeric(df["Age"], errors="coerce"),
         "weight_raw": df["Weight"].astype(str),
-        "offr": pd.to_numeric(df["OffR"], errors="coerce"),        # '–' -> NaN
+        "offr": pd.to_numeric(df["OffR"], errors="coerce"),        # 'â€“' -> NaN
         "place_raw": df["Place_raw"].astype(str).str.strip(),
         "windist_raw": df["WinDist"],
         "winning_time_raw": df["Winning Time"],
@@ -840,7 +840,7 @@ def main():
     # ---- standards
     sto = st[["std_key", "course", "surface", "code", "dist_f", "n_races", "n_used", "n_outliers", "std_time",
               "std_p30", "std_p40", "emp_median", "fit_time", "std_flag"]].copy()
-    sto["std_time_fmt"] = sto["std_time"].map(lambda x: f"{int(x//60)}m {x%60:05.2f}s")
+    sto["std_time_fmt"] = sto["std_time"].map(lambda x: "" if x != x else f"{int(x//60)}m {x%60:05.2f}s")
     sto["std_sec_per_f"] = sto["std_time"] / sto["dist_f"]
     sto = sto.sort_values(["course", "surface", "code", "dist_f"]).round(3)
     sto.to_csv(out / "standard_times.csv", index=False)
@@ -850,7 +850,7 @@ def main():
     if st2 is not None and len(st2):
         sto2 = st2[["std_key", "course", "surface", "code", "dist_f", "n_races", "n_used", "n_outliers", "std_time",
                     "std_p30", "std_p40", "emp_median", "fit_time", "std_flag"]].copy()
-        sto2["std_time_fmt"] = sto2["std_time"].map(lambda x: f"{int(x//60)}m {x%60:05.2f}s")
+        sto2["std_time_fmt"] = sto2["std_time"].map(lambda x: "" if x != x else f"{int(x//60)}m {x%60:05.2f}s")
         sto2["std_sec_per_f"] = sto2["std_time"] / sto2["dist_f"]
         sto2 = sto2.sort_values(["course", "surface", "code", "dist_f"]).round(3)
     sto2.to_csv(out / "standard_times_2yo.csv", index=False)
@@ -1036,7 +1036,7 @@ def write_xlsx(path, sto, gm, fo, san, cpt, sto2=None, cpt2=None, ratings=None):
             for col in ws.columns:
                 ws.column_dimensions[col[0].column_letter].width = min(40, max(9, len(str(col[0].value)) + 2))
 
-METHOD_MD = r"""# Speed figures v3 – method (plain words)
+METHOD_MD = r"""# Speed figures v3 â€“ method (plain words)
 
 Script: `tools\speedfig_v3.py`. Input: `data\rbd_core.csv.gz`. Output: `data\speed_v3\` (v1 in `data\speed\` and v2 in `data\speed_v2\` are untouched).
 The all-ages figures use the v2 method unchanged (see sections 1-5; and v1 METHOD.md for parsing, lb per length/second,
@@ -1044,10 +1044,10 @@ The all-ages figures use the v2 method unchanged (see sections 1-5; and v1 METHO
 
 ## 1. Rare distances: standards from small samples
 - 10+ races: empirical 35th percentile (unchanged).
-- 1-9 races: standard = (n × empirical + 3 × fitted) ÷ (n + 3), and it is **never slower than the empirical value** for
+- 1-9 races: standard = (n Ã— empirical + 3 Ã— fitted) Ã· (n + 3), and it is **never slower than the empirical value** for
   that distance (flag `_EMPCAP` when the cap bites). v1 used the fitted time alone below 4 races, and fits that ran
   too slow gave figures of 170-180.
-- The fitted time's course offset is capped at ±3% of the code/surface line, and ±2% when borrowed from another code at
+- The fitted time's course offset is capped at Â±3% of the code/surface line, and Â±2% when borrowed from another code at
   the same course (e.g. Listowel chases fitted from its hurdles).
 - TIME_SUSPECT (winner more than 40 lb off its class par) is now checked three times: after pass 1 and after pass 2
   (each followed by a recompute), then a final clean-up after pass 3.
@@ -1061,7 +1061,7 @@ The all-ages figures use the v2 method unchanged (see sections 1-5; and v1 METHO
   in every month, so 2yos get **65%** of the BHA total (`WFA_2YO_FACTOR`, set to 1.0 for pure BHA).
 - **Jumps** (approximate BHA NH scale): 4yo hurdles/bumpers 8 lb in Jan falling to 0 in Dec; 4yo chases 10 lb falling to
   1 lb; 3yo juvenile hurdlers 15 lb in Aug falling to 10 lb in Dec.
-- **Weighted figure** = natural + (weight carried + WFA − base weight). WFA is also used for the class pars and standards.
+- **Weighted figure** = natural + (weight carried + WFA âˆ’ base weight). WFA is also used for the class pars and standards.
 
 ## 3. Course layouts
 - **Newmarket**: Rowley Mile vs July Course. RBD names the July Course "Newmarket (July)" until Aug 2026. After that a
@@ -1079,7 +1079,7 @@ The all-ages figures use the v2 method unchanged (see sections 1-5; and v1 METHO
   `raw_weighted_fig` keeps the weighted figure before the floor.
 
 ## 5. Extra column
-- `field_avg_fig` = natural + (weight carried − the race's average weight), the old style (no WFA). `field_avg_wt` is
+- `field_avg_fig` = natural + (weight carried âˆ’ the race's average weight), the old style (no WFA). `field_avg_wt` is
   shown alongside it.
 
 ## 6. Separate 2-year-old scale

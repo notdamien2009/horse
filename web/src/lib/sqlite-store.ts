@@ -115,6 +115,12 @@ export async function qPace(dates: string[]): Promise<Row[]> {
   return await q(CACHE, `SELECT date, course_norm, course, off_hhmm, dist_f, code, label, fig_rel, reason, source, fsp, field_def, n_field, horses FROM pace WHERE date IN (${placeholders(uniq.length)})`, uniq);
 }
 
+
+export async function qSectionals(norms: string[]): Promise<Row[]> {
+  if (!norms.length || !(await hasTable(CACHE, "sectionals"))) return [];
+  return await q(CACHE, `SELECT horse_norm, date, course, rtv_race_id, n, pace_label, fin_speed_pct, fig_adj, fig, run_style, style_pct, sectors FROM sectionals WHERE horse_norm IN (${placeholders(norms.length)})`, norms);
+}
+
 export async function cacheVersion(): Promise<string> {
   const stamp = (f: string) => { try { return String(fs.statSync(f).mtimeMs); } catch { return "0"; } };
   return `${stamp(CARDS)}:${stamp(CACHE)}`;

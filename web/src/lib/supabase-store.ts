@@ -183,6 +183,29 @@ export async function qPace(dates: string[]): Promise<Row[]> {
   }
 }
 
+
+export async function qSectionals(norms: string[]): Promise<Row[]> {
+  const uniq = [...new Set(norms.filter(Boolean))];
+  if (!uniq.length) return [];
+  try {
+    const out: Row[] = [];
+    for (const part of chunks(uniq)) {
+      const rows = await pages((from, to) =>
+        sb()
+          .from("sectionals")
+          .select("horse_norm,date,course,rtv_race_id,n,pace_label,fin_speed_pct,fig_adj,fig,run_style,style_pct,sectors")
+          .in("horse_norm", part)
+          .order("n")
+          .range(from, to),
+      );
+      out.push(...rows.map((r) => normRow(r)));
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export async function cacheVersion(): Promise<string> {
   const meta = await qFigMeta();
   const map = Object.fromEntries(meta.map((r) => [r.k, r.v]));

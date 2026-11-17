@@ -35,6 +35,10 @@ PACE_COLS = [
 WIN_COLS = [
     "ride_id", "race_id", "date", "horse_norm", "horse", "win_pct", "fair_odds", "win_rank",
 ]
+SEC_COLS = [
+    "horse_norm", "date", "course", "rtv_race_id", "n", "pace_label",
+    "fin_speed_pct", "fig_adj", "fig", "run_style", "style_pct", "sectors",
+]
 CARD_ORDER = ("meetings", "races", "runners", "prev_runs", "scrape_log")
 BATCH = 800
 
@@ -94,7 +98,7 @@ def table_exists(con: sqlite3.Connection, name: str) -> bool:
     return con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)).fetchone() is not None
 
 
-def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict], list[dict], list[dict]]:
+def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict], list[dict], list[dict], list[dict]]:
     cards = connect(ROOT / "data" / "cards.sqlite")
     cache = connect(ROOT / "data" / "site_cache.sqlite")
     card_data = {
@@ -109,7 +113,8 @@ def load_all() -> tuple[dict[str, list[dict]], list[dict], list[dict], list[dict
     preds = rows(cache, "SELECT " + ", ".join(PRED_COLS) + " FROM pred_today", PRED_COLS) if table_exists(cache, "pred_today") else []
     pace = rows(cache, "SELECT " + ", ".join(PACE_COLS) + " FROM pace", PACE_COLS) if table_exists(cache, "pace") else []
     wins = rows(cache, "SELECT " + ", ".join(WIN_COLS) + " FROM win_pct", WIN_COLS) if table_exists(cache, "win_pct") else []
-    return card_data, figs, meta, preds, pace, wins
+    sectionals = rows(cache, "SELECT " + ", ".join(SEC_COLS) + " FROM sectionals", SEC_COLS) if table_exists(cache, "sectionals") else []
+    return card_data, figs, meta, preds, pace, wins, sectionals
 
 
 def request(method: str, url: str, key: str, body: bytes | None = None, extra: dict | None = None) -> tuple[int, str]:
@@ -241,7 +246,7 @@ CARD_TYPES = {
 }
 
 
-def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], meta: list[dict], preds: list[dict] | None = None, pace: list[dict] | None = None, wins: list[dict] | None = None) -> None:
+def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], meta: list[dict], preds: list[dict] | None = None, pace: list[dict] | None = None, wins: list[dict] | None = None, sectionals: list[dict] | None = None) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     for f in dest.glob("*.sql"):
         f.unlink()
@@ -294,6 +299,15 @@ def dump_sql(dest: Path, card_data: dict[str, list[dict]], figs: list[dict], met
         slim = [{k: row.get(k) for k in win_types} for row in wins]
         (dest / f"{n:03d}_win_pct.sql").write_text(sql_insert_json("win_pct", slim, win_types), encoding="utf-8")
         n += 1
+    if sectionals:
+        sec_types = {
+            "horse_norm": "text", "date": "date", "course": "text", "rtv_race_id": "bigint",
+            "n": "smallint", "pace_label": "text", "fin_speed_pct": "real", "fig_adj": "real",
+            "fig": "real", "run_style": "text", "style_pct": "real", "sectors": "text",
+        }
+        slim = [{k: row.get(k) for k in sec_types} for row in sectionals]
+        (dest / f"{n:03d}_sectionals.sql").write_text(sql_insert_json("sectionals", slim, sec_types), encoding="utf-8")
+        n += 1
     per = 12000
     tag = "FIGTSV"
     for i in range(0, len(figs), per):
@@ -311,14 +325,14 @@ def main() -> None:
     parser.add_argument("--dump-sql", metavar="DIR", help="Write SQL batches instead of uploading.")
     args = parser.parse_args()
 
-    card_data, figs, meta, preds, pace, wins = load_all()
+    card_data, figs, meta, preds, pace, wins, sectionals = load_all()
     print(f"Loaded cards: {len(card_data['meetings'])} meetings, {len(card_data['races'])} races, "
           f"{len(card_data['runners'])} runners, {len(card_data['prev_runs'])} form runs")
     print(f"Loaded figures: {len(figs):,} rows, {len(meta)} meta keys, {len(preds)} predicted-today rows, "
-          f"{len(pace):,} pace rows, {len(wins)} win-% rows")
+          f"{len(pace):,} pace rows, {len(wins)} win-% rows, {len(sectionals)} sectional rows")
 
     if args.dump_sql:
-        dump_sql(Path(args.dump_sql), card_data, figs, meta, preds, pace, wins)
+        dump_sql(Path(args.dump_sql), card_data, figs, meta, preds, pace, wins, sectionals)
         return
 
     env = load_env()
@@ -333,14 +347,20 @@ def main() -> None:
         )
 
     print(f"Uploading to {base}")
-    print("Wiping existing site data…")
+    print("Wiping existing site dataâ€¦")
     call("POST", f"{base}/rest/v1/rpc/wipe_site_data", key, b"{}")
+    # scrape_log is keyed by date: keep only the latest row per date (cards can be fetched several times a day).
+    if card_data.get("scrape_log"):
+        latest = {}
+        for r in card_data["scrape_log"]:
+            latest[r.get("date")] = r
+        card_data["scrape_log"] = list(latest.values())
     for table in CARD_ORDER:
         post_batches(base, table, key, card_data[table])
     post_batches(base, "fig_meta", key, meta)
     post_batches(base, "figs", key, figs, batch=1000)
     if preds:
-        # Optional table — predictions are also in fig_meta so the site works without it.
+        # Optional table â€” predictions are also in fig_meta so the site works without it.
         status, text = request("DELETE", f"{base}/rest/v1/pred_today?ride_id=gt.0", key, extra={"Prefer": "return=minimal"})
         if status in {200, 204} or (200 <= status < 300):
             post_batches(base, "pred_today", key, preds)
@@ -351,7 +371,7 @@ def main() -> None:
         else:
             print(f"  pred_today skipped ({status} {text[:200]}). Predictions are already in fig_meta.")
     if pace:
-        # Optional table — the site hides pace badges if it is missing.
+        # Optional table â€” the site hides pace badges if it is missing.
         status, text = request("DELETE", f"{base}/rest/v1/pace?date=gte.2000-01-01", key, extra={"Prefer": "return=minimal"})
         if status in {200, 204} or (200 <= status < 300):
             post_batches(base, "pace", key, pace)
@@ -371,6 +391,17 @@ def main() -> None:
             print("  in the horse Supabase SQL editor, then re-run this upload.")
         else:
             print(f"  win_pct skipped ({status} {text[:200]}). Win percentages are already in fig_meta.")
+    if sectionals:
+        # Optional compact table — the site hides the sectional panel if it is missing.
+        status, text = request("DELETE", f"{base}/rest/v1/sectionals?n=gte.0", key, extra={"Prefer": "return=minimal"})
+        if status in {200, 204} or (200 <= status < 300):
+            post_batches(base, "sectionals", key, sectionals)
+        elif status == 404:
+            print("  sectionals table is not on Supabase yet. Run tools/sectionals.sql in the horse")
+            print("  Supabase SQL editor, then re-run this upload. The live site works without")
+            print("  it (the sectional panel just will not show).")
+        else:
+            print(f"  sectionals skipped ({status} {text[:200]}). The live site will hide the sectional panel.")
     print("Done. The Vercel site will pick this up on the next page load (no redeploy needed).")
 
 

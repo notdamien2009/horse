@@ -111,6 +111,29 @@ if (existsSync(paceScript) && existsSync(cache)) {
   if (!paced) console.warn("[figures] pace labels skipped (Python not available). Run PACE_TRUE_RUN.bat when you can.");
 }
 
+// Compact sectional profiles for today's runners (last ~6 runs). A miss must
+// not stop the site — the race card hides the sectional panel if this is empty.
+const secScript = path.join(root, "tools", "site_sectionals.py");
+const hasSecData = existsSync(path.join(data, "sectionals_v12", "runner_sectionals.csv.gz"));
+if (existsSync(secScript) && existsSync(cache) && hasSecData) {
+  let sectioned = false;
+  for (const [cmd, ...pre] of tries) {
+    const r = spawnSync(cmd, [...pre, "-u", secScript], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    if (r.error?.code === "ENOENT") continue;
+    if (r.status === 0) {
+      const out = (r.stdout || "").trim().split("\n").filter(Boolean);
+      const last = out[out.length - 1] || "sectionals ready";
+      console.log(`[figures] sectionals: ${last.replace(/^\[?figures\] ?/, "")}`);
+      sectioned = true;
+    } else {
+      const err = (r.stderr || r.stdout || "").trim().split("\n").slice(-4).join(" | ");
+      console.warn(`[figures] sectionals skipped: ${err || "exit " + r.status}`);
+    }
+    break;
+  }
+  if (!sectioned) console.warn("[figures] sectionals skipped (Python not available).");
+}
+
 // Form-only win % for today's cards. A miss must not stop the site.
 const winScript = path.join(root, "tools", "win_pct.py");
 const hasWinModel = existsSync(path.join(root, "data", "predict_today", "win_pct_model.json"));

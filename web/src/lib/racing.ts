@@ -1,6 +1,6 @@
 import "server-only";
 import {
-  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate, qWinPct,
+  cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate, qSectionals, qWinPct,
   type Row,
 } from "./store";
 import { bundledPayload, parsePayload, predictFromFigs, storedPreds, type Pred, type PredPayload } from "./predict";
@@ -13,12 +13,18 @@ export type Ratings = {
   best2yo: number | null; best3_2yo: number | null; nfigs: number; family_used: "jumps" | "flat";
 };
 export type PaceInfo = {
-  label: "true" | "steady" | "slow" | "unknown";
+  label: "true" | "steady" | "slow" | "fast-early" | "unknown";
   figRel: "ok" | "low" | "suspect";
   reason: string;
   source: string;
   fsp: number | null;
   fieldDef: number | null;
+};
+export type SectionPoint = { k: number; vs: number };
+export type SectionalRun = {
+  date: string; course: string; n: number; pace_label: string;
+  fin_speed_pct: number | null; fig_adj: number | null; fig: number | null;
+  run_style: string | null; style_pct: number | null; sectors: SectionPoint[];
 };
 export type FormRun = {
   date: string; course: string; dist: string; going: string; cls: string; type: string; pos: string;
@@ -29,6 +35,8 @@ export type FormRun = {
   /** how that run compares with today's race (cls null = class unknown) */
   fit: Fit;
   pace: PaceInfo | null;
+  fin_speed_pct: number | null; fig_adj: number | null;
+  run_style: string | null; sectors: SectionPoint[];
 };
 export type Fit = { code: boolean; dist: boolean; going: boolean; cls: boolean | null; all: boolean };
 export type Conditions = { code: string; dist_f: number | null; going_n: number | null; aw: boolean; cls_n: number | null };
@@ -41,6 +49,7 @@ export type Runner = Row & {
   class_change: ClassChange | null; or_delta: number | null;
   pred: number | null; pred_lo: number | null; pred_hi: number | null;
   win_pct: number | null; fair_odds: number | null;
+  sectionals: SectionalRun[];
 };
 export type Race = Row & {
   race_id: number; time: string; course: string; name: string; date: string; family: string;
@@ -224,7 +233,7 @@ function buildForm(prev: Row[], figs: Row[], today: Conditions): FormRun[] {
       date: p.date, course: p.course, dist: p.distance, going: p.going, cls: p.race_class ?? "",
       type: titleCase(p.run_type ?? "").replace("N_h_flat", "NH Flat"),
       pos, ran: p.runners, btn: f?.beaten ?? null, sp: p.odds, or: p.bha, fig: f?.fig ?? null,
-      fig2: f?.fig2 ?? null, comment: p.comment, matched: !!f, ...c, fit: fit(c, today), pace: null,
+      fig2: f?.fig2 ?? null, comment: p.comment, matched: !!f, ...c, fit: fit(c, today), pace: null, fin_speed_pct: null, fig_adj: null, run_style: null, sectors: [],
     });
   }
   const oldest = out.length ? out[out.length - 1].date : "9999";
@@ -237,7 +246,7 @@ function buildForm(prev: Row[], figs: Row[], today: Conditions): FormRun[] {
     out.push({
       date: f.date, course: String(f.course ?? "").replace(/\s*\((IRE|FR|GB|USA)\)$/, ""), dist: f.dist, going: f.going, cls: cls(f.cls), type: f.code ?? "",
       pos: f.pos == null ? "" : String(f.pos), ran: f.ran, btn: f.beaten, sp: null, or: int(f.offr), fig: f.fig,
-      fig2: f.fig2 ?? null, comment: null, matched: true, ...c, fit: fit(c, today), pace: null,
+      fig2: f.fig2 ?? null, comment: null, matched: true, ...c, fit: fit(c, today), pace: null, fin_speed_pct: null, fig_adj: null, run_style: null, sectors: [],
     });
   }
   return out;
@@ -316,7 +325,7 @@ export function commentPace(comment: string | null | undefined): PaceInfo | null
 }
 
 function rowToPace(r: Row): PaceInfo {
-  let label: PaceInfo["label"] = r.label === "slow" || r.label === "steady" || r.label === "true" ? r.label : "unknown";
+  let label: PaceInfo["label"] = r.label === "slow" || r.label === "steady" || r.label === "true" || r.label === "fast-early" ? r.label : "unknown";
   const figRel = r.fig_rel === "low" || r.fig_rel === "suspect" ? r.fig_rel : "ok";
   const fieldDef = r.field_def != null && Number.isFinite(Number(r.field_def)) ? Number(r.field_def) : null;
   // A mid-range field check is still evidence: the race was not a slow-run or a soft standard.
@@ -374,6 +383,92 @@ async function withPace(races: Race[]): Promise<Race[]> {
   for (const r of races) attachPace(r, rows);
   return races;
 }
+
+
+function parseSectors(raw: unknown): SectionPoint[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter((p) => p && Number.isFinite(Number(p.k)) && Number.isFinite(Number(p.vs))).map((p) => ({ k: Number(p.k), vs: Number(p.vs) }));
+  try {
+    const v = JSON.parse(String(raw));
+    return Array.isArray(v) ? parseSectors(v) : [];
+  } catch { return []; }
+}
+
+function paceFromSec(s: SectionalRun): PaceInfo | null {
+  const raw = (s.pace_label || "").toLowerCase().replace(/\s+/g, "-");
+  const label: PaceInfo["label"] = raw === "true" || raw === "steady" || raw === "slow" || raw === "fast-early" ? raw : "unknown";
+  if (label === "unknown") return null;
+  const figRel: PaceInfo["figRel"] = label === "slow" ? "low" : label === "fast-early" ? "suspect" : "ok";
+  const reason = label === "true" ? "Truly run race (sectional pace)."
+    : label === "steady" ? "Steady early pace (sectional)."
+    : label === "slow" ? "Slow-run race; finishing speed high relative to a modest early pace."
+    : "Went too fast early; the raw figure may overstate the performance.";
+  return { label, figRel, reason, source: "sectionals", fsp: s.fin_speed_pct, fieldDef: null };
+}
+
+function toSectional(r: Row): SectionalRun {
+  const n = (v: unknown) => (v != null && v !== "" && Number.isFinite(Number(v)) ? Number(v) : null);
+  return {
+    date: String(r.date ?? "").slice(0, 10),
+    course: String(r.course ?? ""),
+    n: Number(r.n) || 0,
+    pace_label: String(r.pace_label ?? ""),
+    fin_speed_pct: n(r.fin_speed_pct),
+    fig_adj: n(r.fig_adj),
+    fig: n(r.fig),
+    run_style: r.run_style ? String(r.run_style) : null,
+    style_pct: n(r.style_pct),
+    sectors: parseSectors(r.sectors),
+  };
+}
+
+function attachSectionals(race: Race, rows: Row[]): void {
+  const byHorse = new Map<string, SectionalRun[]>();
+  for (const r of rows) {
+    const s = toSectional(r);
+    const list = byHorse.get(String(r.horse_norm ?? "")) ?? [];
+    list.push(s);
+    byHorse.set(String(r.horse_norm ?? ""), list);
+  }
+  for (const list of byHorse.values()) list.sort((a, b) => a.n - b.n);
+  for (const h of race.runners) {
+    const list = byHorse.get(String(h.horse_norm ?? "")) ?? [];
+    h.sectionals = list;
+    for (const f of h.form_runs) {
+      const day = String(f.date).slice(0, 10);
+      const hit = list.find((s) => s.date === day);
+      if (!hit) continue;
+      f.fin_speed_pct = hit.fin_speed_pct;
+      f.fig_adj = hit.fig_adj;
+      f.run_style = hit.run_style;
+      f.sectors = hit.sectors;
+      const secPace = paceFromSec(hit);
+      if (!secPace) {
+        if (f.pace && f.pace.fsp == null && hit.fin_speed_pct != null) f.pace = { ...f.pace, fsp: hit.fin_speed_pct };
+        continue;
+      }
+      if (!f.pace || f.pace.label === "unknown" || f.pace.source === "comments" || secPace.label === "fast-early") {
+        if (f.pace?.reason && f.pace.source !== "comments" && secPace.label !== "fast-early") {
+          secPace.reason = f.pace.reason;
+          secPace.figRel = f.pace.figRel;
+        }
+        if (secPace.fsp == null) secPace.fsp = f.pace?.fsp ?? null;
+        f.pace = secPace;
+      } else if (f.pace.fsp == null && hit.fin_speed_pct != null) {
+        f.pace = { ...f.pace, fsp: hit.fin_speed_pct };
+      }
+    }
+  }
+}
+
+async function withSectionals(races: Race[]): Promise<void> {
+  const norms = [...new Set(races.flatMap((r) => r.runners.map((h) => String(h.horse_norm ?? "")).filter(Boolean)))];
+  if (!norms.length) return;
+  let rows: Row[] = [];
+  try { rows = await qSectionals(norms); } catch { rows = []; }
+  for (const r of races) attachSectionals(r, rows);
+}
+
 
 type WinRow = { win_pct: number; fair_odds: number | null };
 type PredCtx = { payload: PredPayload | null; stored: Map<number, Pred>; win: Map<number, WinRow> };
@@ -445,6 +540,7 @@ function decorateRace(r: Row, runners: Runner[], prevByRide: Map<number, Row[]>,
     h.rank = null;
     h.pred = null; h.pred_lo = null; h.pred_hi = null;
     h.win_pct = null; h.fair_odds = null;
+    h.sectionals = [];
   }
   const act = runners.filter((h) => !h.nr);
   const juv = String(race.age_band ?? "").toUpperCase().startsWith("2YO") && act.some((h) => h.ratings.best3_2yo != null);
@@ -506,6 +602,7 @@ export async function race(raceId: number): Promise<Race | null> {
   const ctx = await loadPredContext(String(r.date));
   const race = decorateRace(r, runners, groupPrev(prev), groupFigs(figs), ctx);
   await withPace([race]);
+  await withSectionals([race]);
   return race;
 }
 
@@ -530,6 +627,7 @@ export async function racesOn(date: string): Promise<Race[]> {
     .sort((a, b) => String(a.time).localeCompare(String(b.time)))
     .map((r) => decorateRace(r, (byRace.get(r.race_id) ?? []).slice(), prevBy, figsBy, ctx));
   await withPace(out);
+  await withSectionals(out);
   return out;
 }
 

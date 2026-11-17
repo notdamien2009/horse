@@ -284,6 +284,7 @@ table.runs{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px
 .pace.true{color:var(--win);background:color-mix(in srgb,var(--win) 14%,transparent);border-color:color-mix(in srgb,var(--win) 40%,transparent)}
 .pace.steady{color:var(--place);background:color-mix(in srgb,var(--place) 16%,transparent);border-color:color-mix(in srgb,var(--place) 45%,transparent)}
 .pace.slow{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.pace.fast-early{color:#c05621;background:color-mix(in srgb,#c05621 14%,transparent);border-color:color-mix(in srgb,#c05621 42%,transparent)}
 .pace.unk{color:var(--faint);border-color:var(--line);font-weight:600}
 .fig-unsure .pill-h,.pill-h.fig-dash{opacity:.72;border-style:dashed;border-width:1.5px}
 .fig-unsure.suspect .pill-h{opacity:.8}
@@ -450,3 +451,22 @@ table.runs{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px
   .gbar-row{grid-template-columns:18px minmax(90px,130px) 1fr 34px}
   .hide-sm{display:none}
 }
+
+/* ---------- sectional profile charts ---------- */
+.sec-mini{margin-top:8px}
+.sec-mini-lbl{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.secchart{position:relative;width:100%}
+.secchart.sm{max-width:470px}
+.secchart.lg{max-width:1100px}
+.sec-par{stroke:var(--muted);stroke-width:1.3;stroke-dasharray:5 4;opacity:.85}
+.sec-line{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.sec-line.last{stroke:var(--text2);stroke-width:2.2;opacity:.95}
+.sec-line.prev{stroke:var(--muted);stroke-width:1.6;opacity:.38}
+.sec-dot.last{fill:var(--text2);stroke:var(--panel);stroke-width:1.4}
+.sec-dot.last.fast{fill:var(--win)}
+.sec-dot.last.slow{fill:var(--bad)}
+.sec-dot.prev{fill:var(--muted);stroke:var(--panel);stroke-width:1;opacity:.55}
+.sec-guide{stroke:var(--text2);stroke-width:1;stroke-dasharray:2 3;opacity:.45}
+.sec-fast{color:var(--win);font-weight:700}
+.sec-slow{color:var(--bad);font-weight:700}
+
