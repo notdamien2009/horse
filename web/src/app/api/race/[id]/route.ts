@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { race } from "@/lib/racing";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const r = await race(Number((await params).id));

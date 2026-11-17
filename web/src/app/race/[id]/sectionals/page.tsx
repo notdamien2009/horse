@@ -4,7 +4,7 @@ import { race } from "@/lib/racing";
 import { SiteShell } from "@/components/SiteShell";
 import { RaceSectionals } from "@/components/RaceSectionals";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type Props = { params: Promise<{ id: string }> };
 

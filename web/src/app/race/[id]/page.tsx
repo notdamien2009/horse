@@ -4,7 +4,7 @@ import { race } from "@/lib/racing";
 import { SiteShell } from "@/components/SiteShell";
 import { RaceCard } from "@/components/RaceCard";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 type Props = { params: Promise<{ id: string }> };
 

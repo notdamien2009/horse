@@ -1,15 +1,16 @@
 import "server-only";
-import { cacheVersion, card, racesOn, type Meeting, type Race } from "./racing";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { CARD_REVALIDATE, CARD_TAG } from "./data-cache";
+import { card, racesOn, type Meeting, type Race } from "./racing";
 
 // One small summary per race for the race tabs: runner count and the top-rated horse.
-// Uses the same race() data as the race card. Cached until the cards or figures change.
+// Uses the same cached racesOn() data as the race card. Fresh for 5 minutes (tag: card).
 export type RaceChip = {
   race_id: number; time: string; name: string; runners: number;
   top: { horse: string; fig: number | null; gap: number | null } | null;
 };
 export type MeetingTabs = { meeting_id: number; course: string; going: string | null; races: RaceChip[] };
-
-const memo = new Map<string, MeetingTabs[]>();
 
 function chipFrom(full: Race | undefined, fallback: Meeting["races"][number]): RaceChip {
   let out: RaceChip = { race_id: fallback.race_id, time: fallback.time, name: fallback.name, runners: Number(fallback.ride_count) || 0, top: null };
@@ -24,19 +25,16 @@ function chipFrom(full: Race | undefined, fallback: Meeting["races"][number]): R
   };
 }
 
-export async function meetingTabs(date: string): Promise<MeetingTabs[]> {
-  const version = `${date}:${await cacheVersion()}`;
-  const hit = memo.get(version);
-  if (hit) return hit;
-  if (memo.size > 20) memo.clear();
+async function meetingTabsFresh(date: string): Promise<MeetingTabs[]> {
   const meetings = await card(date);
   let loaded: Race[] = [];
   try { loaded = await racesOn(date); } catch { /* the tab still works without the summary */ }
   const byId = new Map(loaded.map((r) => [r.race_id, r]));
-  const out = meetings.map((m) => ({
+  return meetings.map((m) => ({
     meeting_id: m.meeting_id, course: m.course, going: m.going,
     races: m.races.map((r) => chipFrom(byId.get(r.race_id), r)),
   }));
-  memo.set(version, out);
-  return out;
 }
+
+const meetingTabsCached = unstable_cache(meetingTabsFresh, ["meeting-tabs"], { revalidate: CARD_REVALIDATE, tags: [CARD_TAG] });
+export const meetingTabs = cache((date: string) => meetingTabsCached(date));

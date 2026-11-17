@@ -1,4 +1,7 @@
 import "server-only";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
+import { CARD_REVALIDATE, CARD_TAG } from "./data-cache";
 import {
   cacheVersion, qCardDates, qFigMeta, qFigs, qHasCards, qMeetings, qPace, qPredToday, qPrevRuns, qRace, qRacesByDate, qRacesFullByDate, qRunners, qRunnersByDate, qSectionals, qWinPct,
   type Row,
@@ -71,11 +74,14 @@ export function localTime(d = new Date()): string {
   return `${g("hour")}:${g("minute")}`;
 }
 
-export async function figMeta(): Promise<FigMeta | null> {
+async function figMetaFresh(): Promise<FigMeta | null> {
   const rows = await qFigMeta();
   if (!rows.length) return null;
   return Object.fromEntries(rows.map((r) => [r.k, r.v]));
 }
+
+const figMetaCached = unstable_cache(figMetaFresh, ["fig-meta"], { revalidate: CARD_REVALIDATE, tags: [CARD_TAG] });
+export const figMeta = cache(() => figMetaCached());
 
 export async function datesAvailable(): Promise<string[]> {
   if (!(await qHasCards())) return [];
@@ -98,7 +104,7 @@ export function raceFamily(name: string | null): string {
   return "Flat";
 }
 
-export async function card(date: string): Promise<Meeting[]> {
+async function cardFresh(date: string): Promise<Meeting[]> {
   if (!(await qHasCards())) return [];
   const meetings = (await qMeetings(date)) as Meeting[];
   const races = await qRacesByDate(date);
@@ -108,6 +114,9 @@ export async function card(date: string): Promise<Meeting[]> {
   }
   return meetings.sort((a, b) => a.first.localeCompare(b.first));
 }
+
+const cardCached = unstable_cache(cardFresh, ["card"], { revalidate: CARD_REVALIDATE, tags: [CARD_TAG] });
+export const card = cache((date: string) => cardCached(date));
 
 /** The next race to run today (or the first race of the card). */
 export async function nextRaceId(date: string, isToday: boolean): Promise<number | null> {
@@ -592,7 +601,7 @@ function groupFigs(rows: Row[]): Map<string, Row[]> {
   return m;
 }
 
-export async function race(raceId: number): Promise<Race | null> {
+async function raceFresh(raceId: number): Promise<Race | null> {
   const r = await qRace(raceId);
   if (!r) return null;
   const runners = (await qRunners(raceId)) as Runner[];
@@ -606,8 +615,11 @@ export async function race(raceId: number): Promise<Race | null> {
   return race;
 }
 
+const raceCached = unstable_cache(raceFresh, ["race"], { revalidate: CARD_REVALIDATE, tags: [CARD_TAG] });
+export const race = cache((raceId: number) => raceCached(raceId));
+
 /** All races on a date, with runners/form/figures, in as few store reads as possible. */
-export async function racesOn(date: string): Promise<Race[]> {
+async function racesOnFresh(date: string): Promise<Race[]> {
   const full = await qRacesFullByDate(date);
   if (!full.length) return [];
   const runners = (await qRunnersByDate(date)) as Runner[];
@@ -630,5 +642,8 @@ export async function racesOn(date: string): Promise<Race[]> {
   await withSectionals(out);
   return out;
 }
+
+const racesOnCached = unstable_cache(racesOnFresh, ["races-on"], { revalidate: CARD_REVALIDATE, tags: [CARD_TAG] });
+export const racesOn = cache((date: string) => racesOnCached(date));
 
 export { cacheVersion };

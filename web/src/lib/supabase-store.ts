@@ -65,7 +65,7 @@ export async function qCardDates(): Promise<string[]> {
 }
 
 export async function qMeetings(date: string): Promise<Row[]> {
-  const { data, error } = await sb().from("meetings").select("*").eq("date", date).order("course");
+  const { data, error } = await sb().from("meetings").select("meeting_id,date,course,country,going,surface,weather").eq("date", date).order("course");
   if (error) throw new Error(`Supabase: ${error.message}`);
   return (data ?? []).map((r) => normRow(r));
 }
@@ -81,14 +81,14 @@ export async function qRacesByDate(date: string): Promise<Row[]> {
 }
 
 export async function qRace(id: number): Promise<Row | null> {
-  const { data, error } = await sb().from("races").select("*").eq("race_id", id).maybeSingle();
+  const { data, error } = await sb().from("races").select("race_id,meeting_id,date,time,course,name,race_class,distance,going,age_band,surface,handicap,ride_count,stage,verdict,betting_forecast,url").eq("race_id", id).maybeSingle();
   if (error) throw new Error(`Supabase: ${error.message}`);
   return data ? normRow(data) : null;
 }
 
 export async function qRunners(raceId: number): Promise<Row[]> {
   const rows = await pages((from, to) =>
-    sb().from("runners").select("*").eq("race_id", raceId).order("cloth").range(from, to),
+    sb().from("runners").select("ride_id,race_id,date,cloth,draw,status,horse,horse_norm,sl_horse_id,age,sex,weight,weight_lb,official_rating,jockey,jockey_claim,trainer,owner,headgear,form,last_ran_days,odds,forecast_odds,runs,wins,places,silk,commentary").eq("race_id", raceId).order("cloth").range(from, to),
   );
   return rows.map((r) => normRow(r));
 }
@@ -98,7 +98,7 @@ export async function qPrevRuns(rideIds: number[]): Promise<Row[]> {
   const out: Row[] = [];
   for (const part of chunks(rideIds)) {
     const rows = await pages((from, to) =>
-      sb().from("prev_runs").select("*").in("ride_id", part).order("n").range(from, to),
+      sb().from("prev_runs").select("ride_id,n,horse_norm,sl_race_id,date,course,distance,run_type,going,race_class,position,outcome,runners,weight,bha,odds,comment").in("ride_id", part).order("n").range(from, to),
     );
     out.push(...rows.map((r) => normRow(r)));
   }
@@ -127,14 +127,14 @@ export async function qFigs(norms: string[], before: string): Promise<Row[]> {
 
 export async function qRacesFullByDate(date: string): Promise<Row[]> {
   const rows = await pages((from, to) =>
-    sb().from("races").select("*").eq("date", date).order("time").range(from, to),
+    sb().from("races").select("race_id,meeting_id,date,time,course,name,race_class,distance,going,age_band,surface,handicap,ride_count,stage,verdict,betting_forecast,url").eq("date", date).order("time").range(from, to),
   );
   return rows.map((r) => normRow(r));
 }
 
 export async function qRunnersByDate(date: string): Promise<Row[]> {
   const rows = await pages((from, to) =>
-    sb().from("runners").select("*").eq("date", date).order("cloth").range(from, to),
+    sb().from("runners").select("ride_id,race_id,date,cloth,draw,status,horse,horse_norm,sl_horse_id,age,sex,weight,weight_lb,official_rating,jockey,jockey_claim,trainer,owner,headgear,form,last_ran_days,odds,forecast_odds,runs,wins,places,silk,commentary").eq("date", date).order("cloth").range(from, to),
   );
   return rows.map((r) => normRow(r));
 }
@@ -143,7 +143,7 @@ export async function qRunnersByDate(date: string): Promise<Row[]> {
 export async function qPredToday(date: string): Promise<Row[]> {
   try {
     const rows = await pages((from, to) =>
-      sb().from("pred_today").select("*").eq("date", date).range(from, to),
+      sb().from("pred_today").select("ride_id,race_id,date,horse_norm,horse,pred,lo,hi,best3,last_fig,n_prior,rank,rank_best3,scale").eq("date", date).range(from, to),
     );
     return rows.map((r) => normRow(r));
   } catch {
@@ -154,7 +154,7 @@ export async function qPredToday(date: string): Promise<Row[]> {
 export async function qWinPct(date: string): Promise<Row[]> {
   try {
     const rows = await pages((from, to) =>
-      sb().from("win_pct").select("*").eq("date", date).range(from, to),
+      sb().from("win_pct").select("ride_id,race_id,date,horse_norm,horse,win_pct,fair_odds,win_rank").eq("date", date).range(from, to),
     );
     return rows.map((r) => normRow(r));
   } catch {
