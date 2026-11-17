@@ -1,0 +1,9 @@
+FurlongIQ Race Intelligence V1 · SHA-256 file manifest
+
+adafdffbbea654deba9201d73b1d3c8140db14a0afd68924c09d0c193ca5d31b  INSTALL_DROP_IN.ps1
+d15ad8ef2ebed30045906a67bd4e31d02263ed6528cf3852cb48d9a14632055c  README-FIRST.txt
+1b9d4aaec1e93dc1ed4878c292692945f2e79eee3c11a3f9493a18fccd3907b9  web/src/app/race/[id]/page.tsx
+00208cd44f9d9a18b4625b35dd9e2c3cc9fdd7475728ebf11a08658278ecd297  web/src/components/RaceIntelligence.module.css
+bcaae7ee2c2b3d30df8e9d797775745c8e0625c1f4acee63aaa92213bda6cb1b  web/src/components/RaceIntelligence.tsx
+8e11697e922bd89aebe47b1fd6843fe78639d0689d2b8d6e9ccc93af86a18ffb  web/src/components/RaceSectionals.module.css
+ef9fec0afdc2d0fac237304b5b3acbfb5185da87b1221f1fb75d7706c0c9e985  web/src/components/RaceSectionals.tsx
