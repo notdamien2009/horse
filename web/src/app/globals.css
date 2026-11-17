@@ -173,8 +173,8 @@ footer{display:flex;flex-wrap:wrap;gap:8px 22px;justify-content:center;padding:1
 .toolbar .legend{margin-left:auto}
 .chart-key{flex-basis:100%;order:5;display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
 .seg{display:inline-flex;padding:3px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
-.seg button{border:0;background:transparent;border-radius:9px;padding:6px 12px;color:var(--muted)}
-.seg button.on{background:var(--panel3);color:var(--text);box-shadow:0 1px 0 var(--line2) inset}
+.seg button,.seg a{border:0;background:transparent;border-radius:9px;padding:6px 12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;text-decoration:none;font:inherit;cursor:pointer}
+.seg button.on,.seg a.on{background:var(--panel3);color:var(--text);box-shadow:0 1px 0 var(--line2) inset}
 button.ghost{background:var(--panel)}
 
 /* ---------- runner cards ---------- */
@@ -470,3 +470,17 @@ table.runs{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px
 .sec-fast{color:var(--win);font-weight:700}
 .sec-slow{color:var(--bad);font-weight:700}
 
+
+/* ---------- race sectionals page ---------- */
+.sec-hero{padding-bottom:16px}
+.sec-compare{position:relative;margin:4px 0 10px;max-width:1100px}
+.sec-legend{display:flex;flex-wrap:wrap;gap:6px 8px;margin:0 0 16px}
+.sec-leg,.sec-name{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--text2);
+  font:inherit;font-size:12.5px;font-weight:650;cursor:pointer;padding:3px 8px;border-radius:8px}
+.sec-leg:hover,.sec-name:hover{background:var(--panel2)}
+.sec-leg.off{opacity:.4;color:var(--muted)}
+.sec-leg i,.sec-name i{width:9px;height:9px;border-radius:50%;border:2px solid;flex:0 0 auto}
+.sec-cloth{color:var(--faint);font-variant-numeric:tabular-nums;font-size:11px}
+.sec-table-wrap{margin:0 0 24px}
+.sec-table .dim{opacity:.45}
+.sec-name{padding:0;font-weight:750}
