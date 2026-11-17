@@ -1,0 +1,24 @@
+Horse build diagnostic
+Run date: 17/11/2026 19:50:54.48
+Project: C:\Users\PC Deals\Desktop\Speeds
+
+Node:
+v24.21.0
+
+npm:
+11.19.0
+
+Root dependency tree:
+C:\Windows\System32
+`-- (empty)
+
+
+Web dependency tree:
+npm error code ENOENT
+npm error syscall lstat
+npm error path C:\Windows\System32\web
+npm error errno -4058
+npm error enoent ENOENT: no such file or directory, lstat 'C:\Windows\System32\web'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: C:\Users\PC Deals\AppData\Local\npm-cache\_logs\2026-11-17T19_50_55_877Z-debug-0.log

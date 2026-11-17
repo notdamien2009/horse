@@ -1,0 +1,29 @@
+QA RESULTS — 17 November 2026
+
+Source inspected in public GitHub repository notdamien2009/horse, main commit:
+8b7d8173c9e122bf9f625c10e53f8e564e87c0b1
+Relevant source files inspected: web/src/components/RaceSectionals.tsx,
+web/src/lib/racing.ts, web/src/app/race/[id]/sectionals/page.tsx,
+web/src/app/globals.css, tools/site_sectionals.py, and web/package.json.
+
+PASS: Both React components parsed and transpiled using installed TypeScript 5.x.
+PASS: Strict TypeScript check with representative local stubs matching racing.ts types,
+      React's basic hook contracts and JSX. (Not a full Next.js production build.)
+PASS: Files align with the site's Next.js web/src/components paths.
+PASS: Upgraded display does not write to Supabase or change racing source/model logic.
+PASS: Historical last-run and average series share a consistent k-axis and preserve
+      null readings rather than plotting missing values as 0.
+PASS: Multiple metrics are separate: par-relative final two checkpoints, late lift,
+      and existing pace-adjusted figure.
+PASS: The supplied V3 interactive HTML sample previously passed desktop/mobile
+      checks; this V4 React integration has NOT been browser-tested against the live API.
+
+NOT TESTED:
+- Full npm run typecheck and npm run build in the actual horse project (dependencies
+  and complete project tree are unavailable in this local runtime).
+- Real Supabase data and race 949447 output, including counts, source differences,
+  incomplete sector profiles and mobile end-to-end site behaviour.
+- Installer executed on a Windows PC (script inspected, Windows execution pending).
+
+IMPORTANT: Horses are from the current card, but the reported sectional performances
+are from each horse's earlier races; rankings are not same-race split-time comparisons.
