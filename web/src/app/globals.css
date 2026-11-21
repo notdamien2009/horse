@@ -1,10 +1,10 @@
 /* ===== FurlongIQ – race-card dashboard ===== */
 :root{
-  --bg:#070a10; --bg2:#0b1019; --panel:#0f151f; --panel2:#141c28; --panel3:#1a2433;
+  --bg:#020617; --bg2:#071426; --panel:#0b1528; --panel2:#0f1d33; --panel3:#16263f;
   --line:rgba(148,170,200,.12); --line2:rgba(148,170,200,.2);
   --text:#eef3fa; --text2:#c3cedd; --muted:#8392a8; --faint:#5b6a80;
-  --acc:#4fc3ff; --acc2:#7c5cff; --gold:#f7c948; --gold2:#ffdf7e; --goldbg:rgba(247,201,72,.08);
-  --win:#2fd57a; --place:#ffb340; --bad:#ff5d6c;
+  --acc:#38bdf8; --acc2:#2563eb; --gold:#f7c948; --gold2:#ffdf7e; --goldbg:rgba(247,201,72,.08);
+  --win:#22c55e; --place:#ffb340; --bad:#f43f5e;
   --heat-l:62%; --heat-s:82%; --fill-l:50%; --pill-a:.16; --pill-l:66%;
   --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -12px rgba(0,0,0,.6);
   --r:14px;
@@ -23,10 +23,10 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:150px}
 body{margin:0;background:
-  radial-gradient(1200px 500px at 85% -120px,rgba(79,195,255,.07),transparent 60%),
-  radial-gradient(900px 400px at -10% -100px,rgba(124,92,255,.06),transparent 60%),var(--bg);
+  radial-gradient(1200px 500px at 85% -120px,rgba(56,189,248,.10),transparent 60%),
+  radial-gradient(900px 400px at -10% -100px,rgba(37,99,235,.10),transparent 60%),var(--bg);
   background-attachment:fixed;color:var(--text);
-  font:14px/1.45 Inter,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  font:14px/1.45 Manrope,Inter,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
   font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased;min-height:100vh}
 b{font-weight:650}
 a{color:var(--acc);text-decoration:none}

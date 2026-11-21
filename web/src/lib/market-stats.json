@@ -1,0 +1,2688 @@
+{
+ "built": "2026-11-21 19:31",
+ "source": "furlongiq-history",
+ "rules": {
+  "back_pp": 3.0,
+  "strong_pp": 5.0,
+  "drift_pp": -3.0,
+  "commission": 0.05,
+  "from": "early price (earliest pre-off exchange price, normally 15 mins before the off)",
+  "to": "FIQ SP (final exchange starting price)"
+ },
+ "counts": {
+  "runners": 433256,
+  "races": 46457,
+  "horses": 48800,
+  "trainers": 1639,
+  "jockeys": 2024,
+  "courses": 120,
+  "price_points": 4297432,
+  "with_move": 406100,
+  "first_date": "2023-05-01",
+  "last_date": "2026-11-13",
+  "fig_runs": 360522
+ },
+ "overall": {
+  "all": {
+   "runners": 406100,
+   "wins": 46184,
+   "sr": 11.4,
+   "ae": 1.04,
+   "roi": 0.5
+  },
+  "backed": {
+   "runners": 42463,
+   "wins": 10796,
+   "sr": 25.4,
+   "ae": 1.01,
+   "roi": -2.8
+  },
+  "strong": {
+   "runners": 18905,
+   "wins": 5718,
+   "sr": 30.2,
+   "ae": 0.99,
+   "roi": -5.3
+  },
+  "drifted": {
+   "runners": 38719,
+   "wins": 6735,
+   "sr": 17.4,
+   "ae": 1.07,
+   "roi": 5.0
+  },
+  "steady": {
+   "runners": 324918,
+   "wins": 28653,
+   "sr": 8.8,
+   "ae": 1.05,
+   "roi": 0.4
+  }
+ },
+ "examples": {
+  "backed": {
+   "trainer": "Gary Hanmer",
+   "all": {
+    "runners": 555,
+    "wins": 66,
+    "sr": 11.9,
+    "ae": 1.34,
+    "roi": 0.8
+   },
+   "backed": {
+    "runners": 64,
+    "wins": 25,
+    "sr": 39.1,
+    "ae": 1.76,
+    "roi": 92.9
+   },
+   "strong": {
+    "runners": 30,
+    "wins": 12,
+    "sr": 40.0,
+    "ae": 1.6,
+    "roi": 95.4
+   },
+   "drifted": {
+    "runners": 39,
+    "wins": 6,
+    "sr": 15.4,
+    "ae": 1.0,
+    "roi": -34.3
+   }
+  },
+  "drift": {
+   "trainer": "William Haggas",
+   "all": {
+    "runners": 2746,
+    "wins": 572,
+    "sr": 20.8,
+    "ae": 1.01,
+    "roi": 7.6
+   },
+   "backed": {
+    "runners": 473,
+    "wins": 160,
+    "sr": 33.8,
+    "ae": 1.01,
+    "roi": -3.5
+   },
+   "strong": {
+    "runners": 232,
+    "wins": 86,
+    "sr": 37.1,
+    "ae": 0.96,
+    "roi": -12.5
+   },
+   "drifted": {
+    "runners": 474,
+    "wins": 99,
+    "sr": 20.9,
+    "ae": 0.94,
+    "roi": -10.6
+   }
+  },
+  "strong": {
+   "trainer": "E McNamara",
+   "all": {
+    "runners": 641,
+    "wins": 77,
+    "sr": 12.0,
+    "ae": 1.33,
+    "roi": 69.8
+   },
+   "backed": {
+    "runners": 52,
+    "wins": 17,
+    "sr": 32.7,
+    "ae": 1.32,
+    "roi": 18.4
+   },
+   "strong": {
+    "runners": 26,
+    "wins": 13,
+    "sr": 50.0,
+    "ae": 1.53,
+    "roi": 57.6
+   },
+   "drifted": {
+    "runners": 51,
+    "wins": 10,
+    "sr": 19.6,
+    "ae": 1.41,
+    "roi": 61.8
+   }
+  }
+ },
+ "trainers": [
+  {
+   "trainer": "Tim Easterby",
+   "all": {
+    "runners": 5027,
+    "wins": 463,
+    "sr": 9.2,
+    "ae": 0.95,
+    "roi": -22.2
+   },
+   "backed": {
+    "runners": 462,
+    "wins": 105,
+    "sr": 22.7,
+    "ae": 1.02,
+    "roi": -7.0
+   },
+   "strong": {
+    "runners": 187,
+    "wins": 58,
+    "sr": 31.0,
+    "ae": 1.15,
+    "roi": 4.9
+   },
+   "drifted": {
+    "runners": 344,
+    "wins": 50,
+    "sr": 14.5,
+    "ae": 1.07,
+    "roi": 8.3
+   }
+  },
+  {
+   "trainer": "Gordon Elliott",
+   "all": {
+    "runners": 4297,
+    "wins": 697,
+    "sr": 16.2,
+    "ae": 1.08,
+    "roi": 7.1
+   },
+   "backed": {
+    "runners": 580,
+    "wins": 190,
+    "sr": 32.8,
+    "ae": 1.1,
+    "roi": 13.4
+   },
+   "strong": {
+    "runners": 312,
+    "wins": 117,
+    "sr": 37.5,
+    "ae": 1.08,
+    "roi": 9.8
+   },
+   "drifted": {
+    "runners": 661,
+    "wins": 145,
+    "sr": 21.9,
+    "ae": 1.1,
+    "roi": 9.5
+   }
+  },
+  {
+   "trainer": "Andrew Balding",
+   "all": {
+    "runners": 3941,
+    "wins": 649,
+    "sr": 16.5,
+    "ae": 1.03,
+    "roi": -3.0
+   },
+   "backed": {
+    "runners": 597,
+    "wins": 170,
+    "sr": 28.5,
+    "ae": 0.97,
+    "roi": -6.1
+   },
+   "strong": {
+    "runners": 308,
+    "wins": 97,
+    "sr": 31.5,
+    "ae": 0.92,
+    "roi": -11.4
+   },
+   "drifted": {
+    "runners": 496,
+    "wins": 96,
+    "sr": 19.4,
+    "ae": 1.03,
+    "roi": -4.9
+   }
+  },
+  {
+   "trainer": "Charlie Johnston",
+   "all": {
+    "runners": 3935,
+    "wins": 484,
+    "sr": 12.3,
+    "ae": 0.97,
+    "roi": -8.5
+   },
+   "backed": {
+    "runners": 546,
+    "wins": 117,
+    "sr": 21.4,
+    "ae": 0.92,
+    "roi": -11.4
+   },
+   "strong": {
+    "runners": 233,
+    "wins": 56,
+    "sr": 24.0,
+    "ae": 0.84,
+    "roi": -16.9
+   },
+   "drifted": {
+    "runners": 381,
+    "wins": 63,
+    "sr": 16.5,
+    "ae": 1.06,
+    "roi": -10.1
+   }
+  },
+  {
+   "trainer": "Joseph Patrick O'Brien",
+   "all": {
+    "runners": 3835,
+    "wins": 558,
+    "sr": 14.6,
+    "ae": 1.0,
+    "roi": 12.8
+   },
+   "backed": {
+    "runners": 561,
+    "wins": 168,
+    "sr": 29.9,
+    "ae": 0.99,
+    "roi": -3.9
+   },
+   "strong": {
+    "runners": 297,
+    "wins": 92,
+    "sr": 31.0,
+    "ae": 0.93,
+    "roi": -8.5
+   },
+   "drifted": {
+    "runners": 564,
+    "wins": 96,
+    "sr": 17.0,
+    "ae": 0.98,
+    "roi": 5.4
+   }
+  },
+  {
+   "trainer": "Tony Carroll",
+   "all": {
+    "runners": 3635,
+    "wins": 406,
+    "sr": 11.2,
+    "ae": 1.06,
+    "roi": 1.9
+   },
+   "backed": {
+    "runners": 392,
+    "wins": 88,
+    "sr": 22.4,
+    "ae": 1.01,
+    "roi": -5.6
+   },
+   "strong": {
+    "runners": 163,
+    "wins": 41,
+    "sr": 25.2,
+    "ae": 0.93,
+    "roi": -12.1
+   },
+   "drifted": {
+    "runners": 286,
+    "wins": 54,
+    "sr": 18.9,
+    "ae": 1.2,
+    "roi": -5.9
+   }
+  },
+  {
+   "trainer": "Richard Hannon",
+   "all": {
+    "runners": 3457,
+    "wins": 393,
+    "sr": 11.4,
+    "ae": 0.99,
+    "roi": -0.9
+   },
+   "backed": {
+    "runners": 333,
+    "wins": 65,
+    "sr": 19.5,
+    "ae": 0.85,
+    "roi": -15.0
+   },
+   "strong": {
+    "runners": 139,
+    "wins": 31,
+    "sr": 22.3,
+    "ae": 0.78,
+    "roi": -33.2
+   },
+   "drifted": {
+    "runners": 365,
+    "wins": 65,
+    "sr": 17.8,
+    "ae": 1.13,
+    "roi": 13.5
+   }
+  },
+  {
+   "trainer": "David O'Meara",
+   "all": {
+    "runners": 3366,
+    "wins": 397,
+    "sr": 11.8,
+    "ae": 1.0,
+    "roi": -3.3
+   },
+   "backed": {
+    "runners": 389,
+    "wins": 91,
+    "sr": 23.4,
+    "ae": 0.95,
+    "roi": -7.9
+   },
+   "strong": {
+    "runners": 165,
+    "wins": 43,
+    "sr": 26.1,
+    "ae": 0.89,
+    "roi": -20.0
+   },
+   "drifted": {
+    "runners": 271,
+    "wins": 37,
+    "sr": 13.7,
+    "ae": 0.91,
+    "roi": -12.2
+   }
+  },
+  {
+   "trainer": "Gavin Cromwell",
+   "all": {
+    "runners": 3271,
+    "wins": 376,
+    "sr": 11.5,
+    "ae": 1.05,
+    "roi": -0.4
+   },
+   "backed": {
+    "runners": 342,
+    "wins": 91,
+    "sr": 26.6,
+    "ae": 1.05,
+    "roi": -0.5
+   },
+   "strong": {
+    "runners": 164,
+    "wins": 51,
+    "sr": 31.1,
+    "ae": 1.02,
+    "roi": -7.2
+   },
+   "drifted": {
+    "runners": 401,
+    "wins": 69,
+    "sr": 17.2,
+    "ae": 1.12,
+    "roi": 24.6
+   }
+  },
+  {
+   "trainer": "W P Mullins",
+   "all": {
+    "runners": 3213,
+    "wins": 839,
+    "sr": 26.1,
+    "ae": 1.06,
+    "roi": 14.6
+   },
+   "backed": {
+    "runners": 514,
+    "wins": 202,
+    "sr": 39.3,
+    "ae": 1.0,
+    "roi": -3.4
+   },
+   "strong": {
+    "runners": 275,
+    "wins": 119,
+    "sr": 43.3,
+    "ae": 0.98,
+    "roi": -0.3
+   },
+   "drifted": {
+    "runners": 705,
+    "wins": 210,
+    "sr": 29.8,
+    "ae": 1.06,
+    "roi": 1.7
+   }
+  },
+  {
+   "trainer": "Dan Skelton",
+   "all": {
+    "runners": 2983,
+    "wins": 633,
+    "sr": 21.2,
+    "ae": 1.09,
+    "roi": 9.8
+   },
+   "backed": {
+    "runners": 407,
+    "wins": 147,
+    "sr": 36.1,
+    "ae": 1.01,
+    "roi": 0.4
+   },
+   "strong": {
+    "runners": 212,
+    "wins": 89,
+    "sr": 42.0,
+    "ae": 1.06,
+    "roi": 2.8
+   },
+   "drifted": {
+    "runners": 605,
+    "wins": 153,
+    "sr": 25.3,
+    "ae": 1.16,
+    "roi": 15.0
+   }
+  },
+  {
+   "trainer": "James Owen",
+   "all": {
+    "runners": 2826,
+    "wins": 522,
+    "sr": 18.5,
+    "ae": 1.09,
+    "roi": 1.4
+   },
+   "backed": {
+    "runners": 439,
+    "wins": 140,
+    "sr": 31.9,
+    "ae": 1.06,
+    "roi": -2.0
+   },
+   "strong": {
+    "runners": 203,
+    "wins": 82,
+    "sr": 40.4,
+    "ae": 1.12,
+    "roi": 1.2
+   },
+   "drifted": {
+    "runners": 429,
+    "wins": 89,
+    "sr": 20.7,
+    "ae": 1.07,
+    "roi": 1.9
+   }
+  },
+  {
+   "trainer": "Richard Fahey",
+   "all": {
+    "runners": 2816,
+    "wins": 283,
+    "sr": 10.0,
+    "ae": 0.95,
+    "roi": -9.8
+   },
+   "backed": {
+    "runners": 271,
+    "wins": 66,
+    "sr": 24.4,
+    "ae": 1.03,
+    "roi": 0.6
+   },
+   "strong": {
+    "runners": 112,
+    "wins": 31,
+    "sr": 27.7,
+    "ae": 1.0,
+    "roi": -0.9
+   },
+   "drifted": {
+    "runners": 290,
+    "wins": 36,
+    "sr": 12.4,
+    "ae": 0.84,
+    "roi": -26.0
+   }
+  },
+  {
+   "trainer": "K R Burke",
+   "all": {
+    "runners": 2756,
+    "wins": 491,
+    "sr": 17.8,
+    "ae": 1.1,
+    "roi": -1.8
+   },
+   "backed": {
+    "runners": 400,
+    "wins": 131,
+    "sr": 32.8,
+    "ae": 1.05,
+    "roi": -2.3
+   },
+   "strong": {
+    "runners": 195,
+    "wins": 71,
+    "sr": 36.4,
+    "ae": 1.02,
+    "roi": -1.1
+   },
+   "drifted": {
+    "runners": 371,
+    "wins": 80,
+    "sr": 21.6,
+    "ae": 1.12,
+    "roi": 10.9
+   }
+  },
+  {
+   "trainer": "William Haggas",
+   "all": {
+    "runners": 2746,
+    "wins": 572,
+    "sr": 20.8,
+    "ae": 1.01,
+    "roi": 7.6
+   },
+   "backed": {
+    "runners": 473,
+    "wins": 160,
+    "sr": 33.8,
+    "ae": 1.01,
+    "roi": -3.5
+   },
+   "strong": {
+    "runners": 232,
+    "wins": 86,
+    "sr": 37.1,
+    "ae": 0.96,
+    "roi": -12.5
+   },
+   "drifted": {
+    "runners": 474,
+    "wins": 99,
+    "sr": 20.9,
+    "ae": 0.94,
+    "roi": -10.6
+   }
+  },
+  {
+   "trainer": "Ian Williams",
+   "all": {
+    "runners": 2639,
+    "wins": 270,
+    "sr": 10.2,
+    "ae": 0.96,
+    "roi": -16.5
+   },
+   "backed": {
+    "runners": 283,
+    "wins": 61,
+    "sr": 21.6,
+    "ae": 0.91,
+    "roi": -6.7
+   },
+   "strong": {
+    "runners": 128,
+    "wins": 28,
+    "sr": 21.9,
+    "ae": 0.72,
+    "roi": -31.3
+   },
+   "drifted": {
+    "runners": 232,
+    "wins": 31,
+    "sr": 13.4,
+    "ae": 0.91,
+    "roi": -21.1
+   }
+  },
+  {
+   "trainer": "Henry De Bromhead",
+   "all": {
+    "runners": 2555,
+    "wins": 397,
+    "sr": 15.5,
+    "ae": 1.06,
+    "roi": 8.0
+   },
+   "backed": {
+    "runners": 427,
+    "wins": 133,
+    "sr": 31.1,
+    "ae": 1.08,
+    "roi": 9.3
+   },
+   "strong": {
+    "runners": 211,
+    "wins": 78,
+    "sr": 37.0,
+    "ae": 1.08,
+    "roi": -3.2
+   },
+   "drifted": {
+    "runners": 300,
+    "wins": 57,
+    "sr": 19.0,
+    "ae": 1.04,
+    "roi": -0.1
+   }
+  },
+  {
+   "trainer": "Ralph Beckett",
+   "all": {
+    "runners": 2476,
+    "wins": 470,
+    "sr": 19.0,
+    "ae": 1.01,
+    "roi": 12.5
+   },
+   "backed": {
+    "runners": 426,
+    "wins": 113,
+    "sr": 26.5,
+    "ae": 0.85,
+    "roi": -23.5
+   },
+   "strong": {
+    "runners": 234,
+    "wins": 66,
+    "sr": 28.2,
+    "ae": 0.76,
+    "roi": -30.5
+   },
+   "drifted": {
+    "runners": 362,
+    "wins": 78,
+    "sr": 21.5,
+    "ae": 0.99,
+    "roi": -15.1
+   }
+  },
+  {
+   "trainer": "Michael Appleby",
+   "all": {
+    "runners": 2475,
+    "wins": 275,
+    "sr": 11.1,
+    "ae": 0.98,
+    "roi": -6.7
+   },
+   "backed": {
+    "runners": 317,
+    "wins": 56,
+    "sr": 17.7,
+    "ae": 0.76,
+    "roi": -22.8
+   },
+   "strong": {
+    "runners": 143,
+    "wins": 22,
+    "sr": 15.4,
+    "ae": 0.58,
+    "roi": -42.2
+   },
+   "drifted": {
+    "runners": 164,
+    "wins": 24,
+    "sr": 14.6,
+    "ae": 1.05,
+    "roi": -4.8
+   }
+  },
+  {
+   "trainer": "Jim Goldie",
+   "all": {
+    "runners": 2474,
+    "wins": 314,
+    "sr": 12.7,
+    "ae": 1.11,
+    "roi": 38.7
+   },
+   "backed": {
+    "runners": 225,
+    "wins": 65,
+    "sr": 28.9,
+    "ae": 1.1,
+    "roi": 8.1
+   },
+   "strong": {
+    "runners": 91,
+    "wins": 31,
+    "sr": 34.1,
+    "ae": 1.07,
+    "roi": 2.4
+   },
+   "drifted": {
+    "runners": 228,
+    "wins": 33,
+    "sr": 14.5,
+    "ae": 1.0,
+    "roi": -19.0
+   }
+  },
+  {
+   "trainer": "John C McConnell",
+   "all": {
+    "runners": 2438,
+    "wins": 160,
+    "sr": 6.6,
+    "ae": 0.92,
+    "roi": -31.0
+   },
+   "backed": {
+    "runners": 176,
+    "wins": 42,
+    "sr": 23.9,
+    "ae": 1.05,
+    "roi": -4.3
+   },
+   "strong": {
+    "runners": 72,
+    "wins": 18,
+    "sr": 25.0,
+    "ae": 0.9,
+    "roi": -7.2
+   },
+   "drifted": {
+    "runners": 134,
+    "wins": 21,
+    "sr": 15.7,
+    "ae": 1.08,
+    "roi": -13.4
+   }
+  },
+  {
+   "trainer": "A P O'Brien",
+   "all": {
+    "runners": 2368,
+    "wins": 529,
+    "sr": 22.3,
+    "ae": 1.05,
+    "roi": -6.8
+   },
+   "backed": {
+    "runners": 387,
+    "wins": 129,
+    "sr": 33.3,
+    "ae": 0.9,
+    "roi": -18.2
+   },
+   "strong": {
+    "runners": 198,
+    "wins": 75,
+    "sr": 37.9,
+    "ae": 0.95,
+    "roi": -6.9
+   },
+   "drifted": {
+    "runners": 421,
+    "wins": 113,
+    "sr": 26.8,
+    "ae": 1.17,
+    "roi": 10.4
+   }
+  },
+  {
+   "trainer": "Mrs John Harrington",
+   "all": {
+    "runners": 2309,
+    "wins": 231,
+    "sr": 10.0,
+    "ae": 0.93,
+    "roi": 6.2
+   },
+   "backed": {
+    "runners": 259,
+    "wins": 48,
+    "sr": 18.5,
+    "ae": 0.79,
+    "roi": -30.3
+   },
+   "strong": {
+    "runners": 123,
+    "wins": 24,
+    "sr": 19.5,
+    "ae": 0.67,
+    "roi": -42.9
+   },
+   "drifted": {
+    "runners": 204,
+    "wins": 31,
+    "sr": 15.2,
+    "ae": 0.99,
+    "roi": 6.1
+   }
+  },
+  {
+   "trainer": "George Boughey",
+   "all": {
+    "runners": 2265,
+    "wins": 371,
+    "sr": 16.4,
+    "ae": 1.0,
+    "roi": -9.1
+   },
+   "backed": {
+    "runners": 282,
+    "wins": 83,
+    "sr": 29.4,
+    "ae": 0.93,
+    "roi": -9.3
+   },
+   "strong": {
+    "runners": 131,
+    "wins": 39,
+    "sr": 29.8,
+    "ae": 0.83,
+    "roi": -26.9
+   },
+   "drifted": {
+    "runners": 401,
+    "wins": 89,
+    "sr": 22.2,
+    "ae": 1.08,
+    "roi": 6.7
+   }
+  },
+  {
+   "trainer": "Iain Jardine",
+   "all": {
+    "runners": 2228,
+    "wins": 240,
+    "sr": 10.8,
+    "ae": 1.03,
+    "roi": 16.8
+   },
+   "backed": {
+    "runners": 180,
+    "wins": 44,
+    "sr": 24.4,
+    "ae": 1.01,
+    "roi": -3.1
+   },
+   "strong": {
+    "runners": 73,
+    "wins": 24,
+    "sr": 32.9,
+    "ae": 1.09,
+    "roi": 10.6
+   },
+   "drifted": {
+    "runners": 230,
+    "wins": 35,
+    "sr": 15.2,
+    "ae": 1.09,
+    "roi": 14.4
+   }
+  },
+  {
+   "trainer": "Archie Watson",
+   "all": {
+    "runners": 2210,
+    "wins": 257,
+    "sr": 11.6,
+    "ae": 0.97,
+    "roi": -9.9
+   },
+   "backed": {
+    "runners": 272,
+    "wins": 71,
+    "sr": 26.1,
+    "ae": 1.01,
+    "roi": -7.0
+   },
+   "strong": {
+    "runners": 132,
+    "wins": 47,
+    "sr": 35.6,
+    "ae": 1.13,
+    "roi": -0.5
+   },
+   "drifted": {
+    "runners": 262,
+    "wins": 46,
+    "sr": 17.6,
+    "ae": 1.12,
+    "roi": 20.2
+   }
+  },
+  {
+   "trainer": "John & Thady Gosden",
+   "all": {
+    "runners": 2104,
+    "wins": 461,
+    "sr": 21.9,
+    "ae": 1.04,
+    "roi": 3.3
+   },
+   "backed": {
+    "runners": 318,
+    "wins": 122,
+    "sr": 38.4,
+    "ae": 1.1,
+    "roi": 7.2
+   },
+   "strong": {
+    "runners": 150,
+    "wins": 63,
+    "sr": 42.0,
+    "ae": 1.08,
+    "roi": 5.2
+   },
+   "drifted": {
+    "runners": 430,
+    "wins": 113,
+    "sr": 26.3,
+    "ae": 1.11,
+    "roi": 9.9
+   }
+  },
+  {
+   "trainer": "Michael & David Easterby",
+   "all": {
+    "runners": 2066,
+    "wins": 192,
+    "sr": 9.3,
+    "ae": 0.96,
+    "roi": -5.0
+   },
+   "backed": {
+    "runners": 174,
+    "wins": 32,
+    "sr": 18.4,
+    "ae": 0.85,
+    "roi": -21.1
+   },
+   "strong": {
+    "runners": 64,
+    "wins": 14,
+    "sr": 21.9,
+    "ae": 0.82,
+    "roi": -29.1
+   },
+   "drifted": {
+    "runners": 174,
+    "wins": 26,
+    "sr": 14.9,
+    "ae": 1.12,
+    "roi": 45.1
+   }
+  },
+  {
+   "trainer": "Michael Dods",
+   "all": {
+    "runners": 2027,
+    "wins": 192,
+    "sr": 9.5,
+    "ae": 0.93,
+    "roi": -12.0
+   },
+   "backed": {
+    "runners": 170,
+    "wins": 34,
+    "sr": 20.0,
+    "ae": 0.93,
+    "roi": -7.2
+   },
+   "strong": {
+    "runners": 46,
+    "wins": 14,
+    "sr": 30.4,
+    "ae": 1.09,
+    "roi": 21.6
+   },
+   "drifted": {
+    "runners": 154,
+    "wins": 17,
+    "sr": 11.0,
+    "ae": 0.83,
+    "roi": -23.3
+   }
+  },
+  {
+   "trainer": "Adrian McGuinness",
+   "all": {
+    "runners": 1985,
+    "wins": 175,
+    "sr": 8.8,
+    "ae": 1.03,
+    "roi": -14.6
+   },
+   "backed": {
+    "runners": 166,
+    "wins": 32,
+    "sr": 19.3,
+    "ae": 0.97,
+    "roi": -7.8
+   },
+   "strong": {
+    "runners": 61,
+    "wins": 11,
+    "sr": 18.0,
+    "ae": 0.73,
+    "roi": -40.2
+   },
+   "drifted": {
+    "runners": 146,
+    "wins": 20,
+    "sr": 13.7,
+    "ae": 1.11,
+    "roi": -2.7
+   }
+  },
+  {
+   "trainer": "Kevin Ryan",
+   "all": {
+    "runners": 1973,
+    "wins": 219,
+    "sr": 11.1,
+    "ae": 1.05,
+    "roi": 4.5
+   },
+   "backed": {
+    "runners": 205,
+    "wins": 43,
+    "sr": 21.0,
+    "ae": 0.9,
+    "roi": -19.4
+   },
+   "strong": {
+    "runners": 89,
+    "wins": 25,
+    "sr": 28.1,
+    "ae": 1.01,
+    "roi": 0.4
+   },
+   "drifted": {
+    "runners": 168,
+    "wins": 32,
+    "sr": 19.0,
+    "ae": 1.17,
+    "roi": 18.6
+   }
+  },
+  {
+   "trainer": "Hugo Palmer",
+   "all": {
+    "runners": 1958,
+    "wins": 241,
+    "sr": 12.3,
+    "ae": 1.07,
+    "roi": 4.3
+   },
+   "backed": {
+    "runners": 177,
+    "wins": 48,
+    "sr": 27.1,
+    "ae": 1.06,
+    "roi": 1.7
+   },
+   "strong": {
+    "runners": 88,
+    "wins": 32,
+    "sr": 36.4,
+    "ae": 1.26,
+    "roi": 33.7
+   },
+   "drifted": {
+    "runners": 198,
+    "wins": 31,
+    "sr": 15.7,
+    "ae": 1.06,
+    "roi": 3.0
+   }
+  },
+  {
+   "trainer": "Roger Varian",
+   "all": {
+    "runners": 1956,
+    "wins": 360,
+    "sr": 18.4,
+    "ae": 0.92,
+    "roi": -17.5
+   },
+   "backed": {
+    "runners": 332,
+    "wins": 95,
+    "sr": 28.6,
+    "ae": 0.88,
+    "roi": -29.9
+   },
+   "strong": {
+    "runners": 153,
+    "wins": 52,
+    "sr": 34.0,
+    "ae": 0.87,
+    "roi": -25.8
+   },
+   "drifted": {
+    "runners": 340,
+    "wins": 66,
+    "sr": 19.4,
+    "ae": 0.92,
+    "roi": -21.6
+   }
+  },
+  {
+   "trainer": "Ed Walker",
+   "all": {
+    "runners": 1928,
+    "wins": 293,
+    "sr": 15.2,
+    "ae": 1.09,
+    "roi": 9.4
+   },
+   "backed": {
+    "runners": 239,
+    "wins": 67,
+    "sr": 28.0,
+    "ae": 1.04,
+    "roi": 7.0
+   },
+   "strong": {
+    "runners": 111,
+    "wins": 33,
+    "sr": 29.7,
+    "ae": 0.96,
+    "roi": -5.2
+   },
+   "drifted": {
+    "runners": 205,
+    "wins": 44,
+    "sr": 21.5,
+    "ae": 1.13,
+    "roi": 23.3
+   }
+  },
+  {
+   "trainer": "Andrew Slattery",
+   "all": {
+    "runners": 1881,
+    "wins": 195,
+    "sr": 10.4,
+    "ae": 1.13,
+    "roi": 17.6
+   },
+   "backed": {
+    "runners": 163,
+    "wins": 41,
+    "sr": 25.2,
+    "ae": 1.09,
+    "roi": -1.2
+   },
+   "strong": {
+    "runners": 72,
+    "wins": 28,
+    "sr": 38.9,
+    "ae": 1.36,
+    "roi": 32.1
+   },
+   "drifted": {
+    "runners": 161,
+    "wins": 21,
+    "sr": 13.0,
+    "ae": 0.93,
+    "roi": -6.2
+   }
+  },
+  {
+   "trainer": "Olly Murphy",
+   "all": {
+    "runners": 1862,
+    "wins": 437,
+    "sr": 23.5,
+    "ae": 1.13,
+    "roi": 6.9
+   },
+   "backed": {
+    "runners": 287,
+    "wins": 111,
+    "sr": 38.7,
+    "ae": 1.11,
+    "roi": 13.1
+   },
+   "strong": {
+    "runners": 157,
+    "wins": 73,
+    "sr": 46.5,
+    "ae": 1.15,
+    "roi": 19.7
+   },
+   "drifted": {
+    "runners": 352,
+    "wins": 73,
+    "sr": 20.7,
+    "ae": 0.94,
+    "roi": -7.3
+   }
+  },
+  {
+   "trainer": "Ruth Carr",
+   "all": {
+    "runners": 1852,
+    "wins": 194,
+    "sr": 10.5,
+    "ae": 1.1,
+    "roi": -5.8
+   },
+   "backed": {
+    "runners": 147,
+    "wins": 36,
+    "sr": 24.5,
+    "ae": 1.21,
+    "roi": 21.8
+   },
+   "strong": {
+    "runners": 45,
+    "wins": 9,
+    "sr": 20.0,
+    "ae": 0.81,
+    "roi": -23.5
+   },
+   "drifted": {
+    "runners": 136,
+    "wins": 13,
+    "sr": 9.6,
+    "ae": 0.77,
+    "roi": -34.7
+   }
+  },
+  {
+   "trainer": "Fergal O'Brien",
+   "all": {
+    "runners": 1821,
+    "wins": 311,
+    "sr": 17.1,
+    "ae": 1.1,
+    "roi": -0.9
+   },
+   "backed": {
+    "runners": 260,
+    "wins": 87,
+    "sr": 33.5,
+    "ae": 1.09,
+    "roi": 13.2
+   },
+   "strong": {
+    "runners": 133,
+    "wins": 47,
+    "sr": 35.3,
+    "ae": 0.98,
+    "roi": 8.3
+   },
+   "drifted": {
+    "runners": 246,
+    "wins": 57,
+    "sr": 23.2,
+    "ae": 1.31,
+    "roi": 30.4
+   }
+  },
+  {
+   "trainer": "Rebecca Menzies",
+   "all": {
+    "runners": 1756,
+    "wins": 177,
+    "sr": 10.1,
+    "ae": 0.98,
+    "roi": -7.9
+   },
+   "backed": {
+    "runners": 174,
+    "wins": 45,
+    "sr": 25.9,
+    "ae": 1.11,
+    "roi": 6.7
+   },
+   "strong": {
+    "runners": 69,
+    "wins": 23,
+    "sr": 33.3,
+    "ae": 1.21,
+    "roi": 13.1
+   },
+   "drifted": {
+    "runners": 152,
+    "wins": 24,
+    "sr": 15.8,
+    "ae": 1.05,
+    "roi": 5.0
+   }
+  },
+  {
+   "trainer": "Gary & Josh Moore",
+   "all": {
+    "runners": 1734,
+    "wins": 219,
+    "sr": 12.6,
+    "ae": 1.0,
+    "roi": 11.5
+   },
+   "backed": {
+    "runners": 185,
+    "wins": 42,
+    "sr": 22.7,
+    "ae": 0.81,
+    "roi": -26.9
+   },
+   "strong": {
+    "runners": 85,
+    "wins": 25,
+    "sr": 29.4,
+    "ae": 0.85,
+    "roi": -24.7
+   },
+   "drifted": {
+    "runners": 241,
+    "wins": 43,
+    "sr": 17.8,
+    "ae": 1.16,
+    "roi": 2.7
+   }
+  }
+ ],
+ "horses": [
+  {
+   "horse": "Hightimeyouwon",
+   "trainer": "Stephen Thorne",
+   "last": "2025-11-07",
+   "all": {
+    "runners": 36,
+    "wins": 7,
+    "sr": 19.4,
+    "ae": 1.27,
+    "roi": 27.0
+   },
+   "backed": {
+    "runners": 14,
+    "wins": 6,
+    "sr": 42.9,
+    "ae": 1.57,
+    "roi": 56.5
+   },
+   "drifted": {
+    "runners": 0,
+    "wins": 0,
+    "sr": null,
+    "ae": null,
+    "roi": null
+   }
+  },
+  {
+   "horse": "Max Of Stars",
+   "trainer": "Ollie Pears",
+   "last": "2026-10-27",
+   "all": {
+    "runners": 36,
+    "wins": 8,
+    "sr": 22.2,
+    "ae": 1.03,
+    "roi": -18.6
+   },
+   "backed": {
+    "runners": 14,
+    "wins": 5,
+    "sr": 35.7,
+    "ae": 1.29,
+    "roi": 17.3
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 1,
+    "sr": 33.3,
+    "ae": 1.08,
+    "roi": -26.1
+   }
+  },
+  {
+   "horse": "Autumn Festival",
+   "trainer": "Ed de Giles",
+   "last": "2025-10-30",
+   "all": {
+    "runners": 39,
+    "wins": 1,
+    "sr": 2.6,
+    "ae": 0.24,
+    "roi": -80.9
+   },
+   "backed": {
+    "runners": 14,
+    "wins": 1,
+    "sr": 7.1,
+    "ae": 0.41,
+    "roi": -46.7
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Charlie Mason",
+   "trainer": "Tony Carroll",
+   "last": "2026-11-07",
+   "all": {
+    "runners": 61,
+    "wins": 7,
+    "sr": 11.5,
+    "ae": 0.75,
+    "roi": -30.3
+   },
+   "backed": {
+    "runners": 14,
+    "wins": 1,
+    "sr": 7.1,
+    "ae": 0.3,
+    "roi": -64.3
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Profit Street",
+   "trainer": "Joey Ramsden",
+   "last": "2026-10-10",
+   "all": {
+    "runners": 42,
+    "wins": 6,
+    "sr": 14.3,
+    "ae": 0.82,
+    "roi": -48.4
+   },
+   "backed": {
+    "runners": 13,
+    "wins": 4,
+    "sr": 30.8,
+    "ae": 1.11,
+    "roi": 3.7
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Forget The Way",
+   "trainer": "James Owen",
+   "last": "2026-05-30",
+   "all": {
+    "runners": 23,
+    "wins": 3,
+    "sr": 13.0,
+    "ae": 0.57,
+    "roi": -62.3
+   },
+   "backed": {
+    "runners": 13,
+    "wins": 1,
+    "sr": 7.7,
+    "ae": 0.33,
+    "roi": -73.7
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "On The River",
+   "trainer": "Harriet Bethell",
+   "last": "2026-11-07",
+   "all": {
+    "runners": 44,
+    "wins": 7,
+    "sr": 15.9,
+    "ae": 1.11,
+    "roi": 1.2
+   },
+   "backed": {
+    "runners": 12,
+    "wins": 4,
+    "sr": 33.3,
+    "ae": 1.32,
+    "roi": 41.3
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Tara Iti",
+   "trainer": "Barry Brennan",
+   "last": "2026-06-17",
+   "all": {
+    "runners": 40,
+    "wins": 5,
+    "sr": 12.5,
+    "ae": 0.7,
+    "roi": -55.4
+   },
+   "backed": {
+    "runners": 12,
+    "wins": 4,
+    "sr": 33.3,
+    "ae": 1.07,
+    "roi": 9.3
+   },
+   "drifted": {
+    "runners": 5,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Tasever",
+   "trainer": "Patrick Morris",
+   "last": "2026-10-20",
+   "all": {
+    "runners": 57,
+    "wins": 6,
+    "sr": 10.5,
+    "ae": 0.88,
+    "roi": -42.6
+   },
+   "backed": {
+    "runners": 12,
+    "wins": 4,
+    "sr": 33.3,
+    "ae": 1.72,
+    "roi": 54.2
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Mehman",
+   "trainer": "P J F Murphy",
+   "last": "2026-10-30",
+   "all": {
+    "runners": 41,
+    "wins": 3,
+    "sr": 7.3,
+    "ae": 0.55,
+    "roi": -73.3
+   },
+   "backed": {
+    "runners": 12,
+    "wins": 3,
+    "sr": 25.0,
+    "ae": 1.04,
+    "roi": -8.7
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Cerulean Bay",
+   "trainer": "David O'Meara",
+   "last": "2026-10-11",
+   "all": {
+    "runners": 35,
+    "wins": 7,
+    "sr": 20.0,
+    "ae": 1.56,
+    "roi": -2.0
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 5,
+    "sr": 45.5,
+    "ae": 2.07,
+    "roi": 68.2
+   },
+   "drifted": {
+    "runners": 0,
+    "wins": 0,
+    "sr": null,
+    "ae": null,
+    "roi": null
+   }
+  },
+  {
+   "horse": "Magnetic North",
+   "trainer": "Peter Fahey",
+   "last": "2025-07-08",
+   "all": {
+    "runners": 30,
+    "wins": 8,
+    "sr": 26.7,
+    "ae": 2.21,
+    "roi": 115.1
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 5,
+    "sr": 45.5,
+    "ae": 1.84,
+    "roi": 76.5
+   },
+   "drifted": {
+    "runners": 0,
+    "wins": 0,
+    "sr": null,
+    "ae": null,
+    "roi": null
+   }
+  },
+  {
+   "horse": "Charging Thunder",
+   "trainer": "James Owen",
+   "last": "2026-11-05",
+   "all": {
+    "runners": 41,
+    "wins": 7,
+    "sr": 17.1,
+    "ae": 1.07,
+    "roi": -42.0
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 4,
+    "sr": 36.4,
+    "ae": 1.66,
+    "roi": 24.7
+   },
+   "drifted": {
+    "runners": 6,
+    "wins": 1,
+    "sr": 16.7,
+    "ae": 0.82,
+    "roi": -53.9
+   }
+  },
+  {
+   "horse": "Small Fry",
+   "trainer": "Joseph Patrick O'Brien",
+   "last": "2026-08-19",
+   "all": {
+    "runners": 24,
+    "wins": 6,
+    "sr": 25.0,
+    "ae": 1.08,
+    "roi": -25.3
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 4,
+    "sr": 36.4,
+    "ae": 1.04,
+    "roi": 6.1
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Dion Baker",
+   "trainer": "Michael Wigham",
+   "last": "2026-09-28",
+   "all": {
+    "runners": 64,
+    "wins": 9,
+    "sr": 14.1,
+    "ae": 1.11,
+    "roi": -37.5
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 3,
+    "sr": 27.3,
+    "ae": 1.31,
+    "roi": -27.0
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 1,
+    "sr": 50.0,
+    "ae": 2.56,
+    "roi": 157.6
+   }
+  },
+  {
+   "horse": "Ideal Guest",
+   "trainer": "Harriet Bethell",
+   "last": "2026-09-08",
+   "all": {
+    "runners": 28,
+    "wins": 3,
+    "sr": 10.7,
+    "ae": 0.67,
+    "roi": -46.8
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 3,
+    "sr": 27.3,
+    "ae": 1.25,
+    "roi": 35.4
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Its A Love Thing",
+   "trainer": "Sam England",
+   "last": "2026-10-23",
+   "all": {
+    "runners": 37,
+    "wins": 6,
+    "sr": 16.2,
+    "ae": 1.49,
+    "roi": 9.9
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 3,
+    "sr": 27.3,
+    "ae": 1.36,
+    "roi": 96.5
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Neptune Legend",
+   "trainer": "Tony Carroll",
+   "last": "2026-10-29",
+   "all": {
+    "runners": 64,
+    "wins": 10,
+    "sr": 15.6,
+    "ae": 1.15,
+    "roi": 0.1
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 3,
+    "sr": 27.3,
+    "ae": 1.09,
+    "roi": -38.8
+   },
+   "drifted": {
+    "runners": 14,
+    "wins": 3,
+    "sr": 21.4,
+    "ae": 1.16,
+    "roi": 2.0
+   }
+  },
+  {
+   "horse": "Coconut Bay",
+   "trainer": "Tristan Davidson",
+   "last": "2026-09-12",
+   "all": {
+    "runners": 69,
+    "wins": 6,
+    "sr": 8.7,
+    "ae": 0.77,
+    "roi": -37.4
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 1.04,
+    "roi": 15.3
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Diamondsinthesand",
+   "trainer": "Adrian Wintle",
+   "last": "2026-08-27",
+   "all": {
+    "runners": 51,
+    "wins": 5,
+    "sr": 9.8,
+    "ae": 0.71,
+    "roi": -47.4
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 0.81,
+    "roi": -33.2
+   },
+   "drifted": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 1.26,
+    "roi": 36.2
+   }
+  },
+  {
+   "horse": "Gustav Graves",
+   "trainer": "Derek Shaw",
+   "last": "2026-10-27",
+   "all": {
+    "runners": 68,
+    "wins": 8,
+    "sr": 11.8,
+    "ae": 0.88,
+    "roi": -43.8
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 0.93,
+    "roi": -19.0
+   },
+   "drifted": {
+    "runners": 7,
+    "wins": 1,
+    "sr": 14.3,
+    "ae": 1.38,
+    "roi": -54.4
+   }
+  },
+  {
+   "horse": "Kondratiev Wave",
+   "trainer": "Tony Carroll",
+   "last": "2026-10-31",
+   "all": {
+    "runners": 50,
+    "wins": 5,
+    "sr": 10.0,
+    "ae": 0.63,
+    "roi": -49.5
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 0.65,
+    "roi": -57.9
+   },
+   "drifted": {
+    "runners": 6,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Ramon Di Loria",
+   "trainer": "Ewan Whillans",
+   "last": "2026-11-07",
+   "all": {
+    "runners": 74,
+    "wins": 8,
+    "sr": 10.8,
+    "ae": 0.88,
+    "roi": -16.2
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 2,
+    "sr": 18.2,
+    "ae": 1.08,
+    "roi": 23.4
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 2,
+    "sr": 50.0,
+    "ae": 2.71,
+    "roi": 132.4
+   }
+  },
+  {
+   "horse": "Autumn Angel",
+   "trainer": "Tony Carroll",
+   "last": "2026-07-16",
+   "all": {
+    "runners": 52,
+    "wins": 5,
+    "sr": 9.6,
+    "ae": 0.68,
+    "roi": -8.0
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 1,
+    "sr": 9.1,
+    "ae": 0.44,
+    "roi": -37.8
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 1,
+    "sr": 25.0,
+    "ae": 1.08,
+    "roi": -27.5
+   }
+  },
+  {
+   "horse": "Dancing In Paris",
+   "trainer": "Ian Williams",
+   "last": "2026-09-13",
+   "all": {
+    "runners": 33,
+    "wins": 4,
+    "sr": 12.1,
+    "ae": 0.94,
+    "roi": -3.7
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 1,
+    "sr": 9.1,
+    "ae": 0.41,
+    "roi": -46.0
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Lermoos Legend",
+   "trainer": "Mickey Bowen",
+   "last": "2026-10-08",
+   "all": {
+    "runners": 31,
+    "wins": 3,
+    "sr": 9.7,
+    "ae": 0.52,
+    "roi": -52.5
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 1,
+    "sr": 9.1,
+    "ae": 0.38,
+    "roi": -72.4
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Mythical Rock",
+   "trainer": "C Byrnes",
+   "last": "2026-10-20",
+   "all": {
+    "runners": 35,
+    "wins": 1,
+    "sr": 2.9,
+    "ae": 0.21,
+    "roi": -85.9
+   },
+   "backed": {
+    "runners": 11,
+    "wins": 1,
+    "sr": 9.1,
+    "ae": 0.47,
+    "roi": -55.2
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Al Qareem",
+   "trainer": "K R Burke",
+   "last": "2026-10-30",
+   "all": {
+    "runners": 21,
+    "wins": 9,
+    "sr": 42.9,
+    "ae": 1.66,
+    "roi": 57.6
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 5,
+    "sr": 50.0,
+    "ae": 1.48,
+    "roi": 31.7
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Hitched",
+   "trainer": "David Simcock",
+   "last": "2026-11-05",
+   "all": {
+    "runners": 46,
+    "wins": 9,
+    "sr": 19.6,
+    "ae": 1.29,
+    "roi": 27.6
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 4,
+    "sr": 40.0,
+    "ae": 1.55,
+    "roi": 37.7
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 1,
+    "sr": 25.0,
+    "ae": 1.05,
+    "roi": -38.9
+   }
+  },
+  {
+   "horse": "Birkenhead",
+   "trainer": "Paul Midgley",
+   "last": "2026-05-09",
+   "all": {
+    "runners": 40,
+    "wins": 5,
+    "sr": 12.5,
+    "ae": 1.12,
+    "roi": 19.0
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.55,
+    "roi": 53.0
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 1,
+    "sr": 50.0,
+    "ae": 6.81,
+    "roi": 329.0
+   }
+  },
+  {
+   "horse": "Bobacious",
+   "trainer": "Mark Hoad",
+   "last": "2026-11-04",
+   "all": {
+    "runners": 34,
+    "wins": 5,
+    "sr": 14.7,
+    "ae": 0.84,
+    "roi": -49.5
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.19,
+    "roi": -7.2
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 1,
+    "sr": 25.0,
+    "ae": 1.0,
+    "roi": -42.2
+   }
+  },
+  {
+   "horse": "Keke",
+   "trainer": "Edward Lynam",
+   "last": "2026-10-15",
+   "all": {
+    "runners": 31,
+    "wins": 8,
+    "sr": 25.8,
+    "ae": 1.59,
+    "roi": 34.2
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.22,
+    "roi": 7.9
+   },
+   "drifted": {
+    "runners": 1,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Limerick Leader",
+   "trainer": "Nick Scholfield",
+   "last": "2026-09-28",
+   "all": {
+    "runners": 26,
+    "wins": 5,
+    "sr": 19.2,
+    "ae": 0.92,
+    "roi": -22.7
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.08,
+    "roi": -25.1
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Look Back Smiling",
+   "trainer": "Neil Mulholland",
+   "last": "2026-11-04",
+   "all": {
+    "runners": 44,
+    "wins": 4,
+    "sr": 9.1,
+    "ae": 0.73,
+    "roi": -34.6
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.2,
+    "roi": 73.1
+   },
+   "drifted": {
+    "runners": 7,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Night On Earth",
+   "trainer": "Ian Williams",
+   "last": "2025-10-24",
+   "all": {
+    "runners": 47,
+    "wins": 6,
+    "sr": 12.8,
+    "ae": 0.83,
+    "roi": 4.0
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.19,
+    "roi": 37.6
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Prince Quattro",
+   "trainer": "James Owen",
+   "last": "2026-08-08",
+   "all": {
+    "runners": 42,
+    "wins": 7,
+    "sr": 16.7,
+    "ae": 1.21,
+    "roi": 1.1
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 3,
+    "sr": 30.0,
+    "ae": 1.1,
+    "roi": -7.8
+   },
+   "drifted": {
+    "runners": 9,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Batal Dubai",
+   "trainer": "Jack Morland",
+   "last": "2025-06-05",
+   "all": {
+    "runners": 24,
+    "wins": 3,
+    "sr": 12.5,
+    "ae": 0.79,
+    "roi": -48.1
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 2,
+    "sr": 20.0,
+    "ae": 0.98,
+    "roi": -20.2
+   },
+   "drifted": {
+    "runners": 4,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Buy The Dip",
+   "trainer": "Jim Boyle",
+   "last": "2026-07-09",
+   "all": {
+    "runners": 37,
+    "wins": 6,
+    "sr": 16.2,
+    "ae": 0.93,
+    "roi": -18.4
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 2,
+    "sr": 20.0,
+    "ae": 0.88,
+    "roi": -9.6
+   },
+   "drifted": {
+    "runners": 3,
+    "wins": 1,
+    "sr": 33.3,
+    "ae": 1.88,
+    "roi": 9.6
+   }
+  },
+  {
+   "horse": "Harlington",
+   "trainer": "Charlie Clover",
+   "last": "2026-10-09",
+   "all": {
+    "runners": 37,
+    "wins": 7,
+    "sr": 18.9,
+    "ae": 1.09,
+    "roi": -17.5
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 2,
+    "sr": 20.0,
+    "ae": 0.83,
+    "roi": -31.3
+   },
+   "drifted": {
+    "runners": 6,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  },
+  {
+   "horse": "Lipsink",
+   "trainer": "Michael Appleby",
+   "last": "2026-11-03",
+   "all": {
+    "runners": 38,
+    "wins": 7,
+    "sr": 18.4,
+    "ae": 1.54,
+    "roi": 166.1
+   },
+   "backed": {
+    "runners": 10,
+    "wins": 2,
+    "sr": 20.0,
+    "ae": 1.07,
+    "roi": 154.6
+   },
+   "drifted": {
+    "runners": 2,
+    "wins": 0,
+    "sr": 0.0,
+    "ae": 0.0,
+    "roi": -100.0
+   }
+  }
+ ],
+ "movers": {
+  "date": "2026-11-13",
+  "supporters": [
+   {
+    "time": "13:20",
+    "course": "Sedgefield",
+    "horse": "Farfromaway",
+    "trainer": "Joel Parkinson & Sue Smith",
+    "p0": 1.85,
+    "p0_col": "15 Mins",
+    "sp": 1.5,
+    "move": 12.6,
+    "top_pct": 4.0,
+    "pos": 1
+   },
+   {
+    "time": "19:00",
+    "course": "Dundalk",
+    "horse": "In The Minus",
+    "trainer": "Brian Francis Cawley",
+    "p0": 8.0,
+    "p0_col": "15 Mins",
+    "sp": 4.6,
+    "move": 9.2,
+    "top_pct": 4.0,
+    "pos": 2
+   },
+   {
+    "time": "16:00",
+    "course": "Cheltenham",
+    "horse": "Lexington Wood",
+    "trainer": "Olly Murphy",
+    "p0": 12.0,
+    "p0_col": "15 Mins",
+    "sp": 5.87,
+    "move": 8.7,
+    "top_pct": 5.1,
+    "pos": 1
+   },
+   {
+    "time": "15:40",
+    "course": "Sedgefield",
+    "horse": "Leave Her To Me",
+    "trainer": "David Killahena & Graeme McPherson",
+    "p0": 2.96,
+    "p0_col": "15 Mins",
+    "sp": 2.36,
+    "move": 8.6,
+    "top_pct": 14.8,
+    "pos": 1
+   },
+   {
+    "time": "14:30",
+    "course": "Sedgefield",
+    "horse": "Carthusian",
+    "trainer": "Jennie Candlish",
+    "p0": 2.98,
+    "p0_col": "15 Mins",
+    "sp": 2.54,
+    "move": 5.8,
+    "top_pct": 31.2,
+    "pos": 2
+   },
+   {
+    "time": "14:05",
+    "course": "Southwell",
+    "horse": "Helios Forlonge",
+    "trainer": "Olly Murphy",
+    "p0": 1.83,
+    "p0_col": "15 Mins",
+    "sp": 1.68,
+    "move": 4.9,
+    "top_pct": 39.3,
+    "pos": 1
+   },
+   {
+    "time": "12:55",
+    "course": "Southwell",
+    "horse": "Gata Ban",
+    "trainer": "Neil Mulholland",
+    "p0": 3.4,
+    "p0_col": "15 Mins",
+    "sp": 2.92,
+    "move": 4.8,
+    "top_pct": 39.7,
+    "pos": 1
+   },
+   {
+    "time": "13:30",
+    "course": "Southwell",
+    "horse": "Island Bridge",
+    "trainer": "Kim Bailey & Mat Nicholls",
+    "p0": 3.35,
+    "p0_col": "15 Mins",
+    "sp": 2.9,
+    "move": 4.6,
+    "top_pct": 41.8,
+    "pos": 2
+   },
+   {
+    "time": "18:30",
+    "course": "Dundalk",
+    "horse": "Shenata",
+    "trainer": "J P Murtagh",
+    "p0": 2.14,
+    "p0_col": "15 Mins",
+    "sp": 1.95,
+    "move": 4.6,
+    "top_pct": 42.6,
+    "pos": 2
+   },
+   {
+    "time": "20:30",
+    "course": "Dundalk",
+    "horse": "Love Orchid",
+    "trainer": "Noel Meade",
+    "p0": 4.6,
+    "p0_col": "15 Mins",
+    "sp": 3.85,
+    "move": 4.2,
+    "top_pct": 30.3,
+    "pos": 2
+   }
+  ],
+  "drifters": [
+   {
+    "time": "13:20",
+    "course": "Sedgefield",
+    "horse": "In The Trenches",
+    "trainer": "Jennie Candlish",
+    "p0": 2.2,
+    "p0_col": "15 Mins",
+    "sp": 3.02,
+    "move": -12.3,
+    "top_pct": 1.1,
+    "pos": 2
+   },
+   {
+    "time": "15:15",
+    "course": "Southwell",
+    "horse": "Northwest Passage",
+    "trainer": "Ivan Furtado",
+    "p0": 3.45,
+    "p0_col": "15 Mins",
+    "sp": 5.4,
+    "move": -10.5,
+    "top_pct": 2.4,
+    "pos": 1
+   },
+   {
+    "time": "15:50",
+    "course": "Southwell",
+    "horse": "Crafty Gael",
+    "trainer": "Lizzie Quinlan",
+    "p0": 4.2,
+    "p0_col": "15 Mins",
+    "sp": 6.08,
+    "move": -7.4,
+    "top_pct": 1.9,
+    "pos": 1
+   },
+   {
+    "time": "12:45",
+    "course": "Sedgefield",
+    "horse": "Walk In The Valley",
+    "trainer": "Joel Parkinson & Sue Smith",
+    "p0": 2.36,
+    "p0_col": "15 Mins",
+    "sp": 2.81,
+    "move": -6.8,
+    "top_pct": 24.1,
+    "pos": 3
+   },
+   {
+    "time": "15:40",
+    "course": "Sedgefield",
+    "horse": "Stellarmasterpiece",
+    "trainer": "Micky Hammond & Becky Smith",
+    "p0": 2.26,
+    "p0_col": "15 Mins",
+    "sp": 2.59,
+    "move": -5.6,
+    "top_pct": 32.7,
+    "pos": 2
+   },
+   {
+    "time": "20:30",
+    "course": "Dundalk",
+    "horse": "Phlox",
+    "trainer": "J P Murtagh",
+    "p0": 7.8,
+    "p0_col": "15 Mins",
+    "sp": 13.5,
+    "move": -5.4,
+    "top_pct": 1.5,
+    "pos": 4
+   },
+   {
+    "time": "12:20",
+    "course": "Southwell",
+    "horse": "Golly Gosh",
+    "trainer": "T Ellis",
+    "p0": 2.0,
+    "p0_col": "15 Mins",
+    "sp": 2.24,
+    "move": -5.4,
+    "top_pct": 35.0,
+    "pos": 1
+   },
+   {
+    "time": "13:45",
+    "course": "Cheltenham",
+    "horse": "Intosomethinggood",
+    "trainer": "Nigel & Willy Twiston-Davies",
+    "p0": 3.75,
+    "p0_col": "15 Mins",
+    "sp": 4.6,
+    "move": -4.9,
+    "top_pct": 23.7,
+    "pos": 2
+   },
+   {
+    "time": "12:55",
+    "course": "Southwell",
+    "horse": "Out On Her Own",
+    "trainer": "Dianne Sayer",
+    "p0": 3.85,
+    "p0_col": "15 Mins",
+    "sp": 4.73,
+    "move": -4.8,
+    "top_pct": 24.4,
+    "pos": 2
+   },
+   {
+    "time": "17:30",
+    "course": "Dundalk",
+    "horse": "Normanton",
+    "trainer": "David Marnane",
+    "p0": 7.8,
+    "p0_col": "15 Mins",
+    "sp": 12.5,
+    "move": -4.8,
+    "top_pct": 2.5,
+    "pos": 5
+   }
+  ]
+ }
+}

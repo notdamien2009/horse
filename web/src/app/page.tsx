@@ -1,18 +1,23 @@
-import { redirect } from "next/navigation";
-import { cardDate, nextRaceId } from "@/lib/racing";
+import type { Metadata } from "next";
 import { SiteShell } from "@/components/SiteShell";
+import { Counters, EdgeCards, Explore, Hero, MovesOverview, Pricing } from "@/components/Market";
 
 export const revalidate = 300;
+export const metadata: Metadata = {
+  title: { absolute: "FurlongIQ · Racing market intelligence" },
+  description: "Today's UK & Irish racing with FurlongIQ market moves, speed ratings and trainer records.",
+};
 
-// Home: jump straight to the next race to run today.
-export default async function Home() {
-  const { date, isToday } = await cardDate();
-  const id = await nextRaceId(date, isToday);
-  if (id != null) redirect(`/race/${id}`);
+export default function Page() {
   return (
     <SiteShell activeId={null}>
-      <div className="empty">
-        No cards yet. Double-click <b>GET_TODAYS_CARDS.bat</b> (or run <code>npm run cards</code>), then refresh this page.
+      <div className="mk">
+        <Hero />
+        <Counters />
+        <MovesOverview />
+        <EdgeCards />
+        <Explore />
+        <Pricing />
       </div>
     </SiteShell>
   );

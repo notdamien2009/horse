@@ -6,6 +6,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { MeetingTabs } from "@/lib/summary";
 import { hueStyle } from "@/lib/colours";
 
+const SITE_NAV: [string, string][] = [
+  ["/", "Home"], ["/cards", "Racecards"], ["/live", "Live market"], ["/movers", "Movers"],
+  ["/profiles", "Profiles"], ["/tools", "Tools"], ["/guides", "Guides"], ["/pricing", "Pricing"],
+];
+
 const pad = (n: number) => String(n).padStart(2, "0");
 const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
@@ -54,8 +59,14 @@ export function RaceTabs({ meetings, activeId, isToday, dateLabel, status, stale
 
   return (
     <header className="topbar">
+      <nav className="sitenav" aria-label="FurlongIQ">
+        {SITE_NAV.map(([href, label]) => {
+          const on = href === "/" ? path === "/" : href === "/cards" ? path === "/cards" || path.startsWith("/race/") : path.startsWith(href);
+          return <Link key={href} href={href} prefetch={false} className={on ? "on" : undefined} aria-current={on ? "page" : undefined}>{label}</Link>;
+        })}
+      </nav>
       <div className="bar1">
-        <Link href="/" className="brand" prefetch={false} aria-label="FurlongIQ – next race">
+        <Link href="/" className="brand" prefetch={false} aria-label="FurlongIQ home">
           <img src="/logo.png" alt="" className="logo-img" width={34} height={34} />
           <span className="brand-txt">
             <span className="wordmark">Furlong<span className="brand-iq">IQ</span></span>

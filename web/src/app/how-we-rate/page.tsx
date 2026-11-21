@@ -153,7 +153,7 @@ export default function HowWeRatePage() {
           <p>We build that label from three checks, in this order:</p>
           <ul>
             <li>
-              <b>Sectionals</b> — where we have Racing TV data, the finishing-speed percentage (how much faster the
+              <b>Sectionals</b> — where we have FurlongIQ sectional data, the finishing-speed percentage (how much faster the
               last two furlongs were than the race average). A high percentage means they finished much faster than
               they travelled, which is the signature of a slow-run race. The bands are set from the data itself, by
               code and distance, because a 2m hurdle doesn&apos;t finish the same way a 5f sprint does.
@@ -184,25 +184,25 @@ export default function HowWeRatePage() {
             from form only. The figures in a race are turned into probabilities that <b>add up to 100%</b>.
             We use the predicted-today figure, how far it sits behind the top of the race, Best of the last 3,
             the last figure, class and official-rating moves, days since the last run, field size, and a
-            reliability adjustment when a recent figure came from a slow or suspicious pace. Starting prices
-            and Betfair prices are not used to make the number.
+            reliability adjustment when a recent figure came from a slow or suspicious pace. Market prices are
+            not used to make the number.
           </p>
           <p>
             Next to the win % is a <b>fair odds</b> in decimal form (for example 5.50, which is the same as 9/2).
-            Compare it with the live price: <b>if the price is bigger than our fair odds, it may be value</b>.
+            Compare it with the market price: <b>if the price is bigger than our fair odds, it may be value</b>.
             That is a guide, not a ready-made bet — prices were held back and only used afterwards to check
             whether the rule would have paid on a later year of results.
           </p>
           <p>
-            You can sort the card <b>By win %</b>. All odds on the site (the card, the form table, and the
-            headline price) are shown as decimals: 5/2 becomes 3.50, evens becomes 2.00.
+            You can sort the card <b>By win %</b>. All prices on the site are FurlongIQ market prices, shown as decimals
+            (5/2 is 3.50, evens is 2.00).
           </p>
         </section>
 
         <section className="guide-soon">
           <h2>Coming soon</h2>
           <p>
-            The predicted figure above is a first pass. Once the Racing TV results and the rest of the sectionals are in, we will:
+            The predicted figure above is a first pass. Once the rest of the FurlongIQ sectionals are in, we will:
           </p>
           <ul>
             <li>

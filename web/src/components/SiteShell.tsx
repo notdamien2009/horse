@@ -31,8 +31,8 @@ export async function SiteShell({ activeId, children }: { activeId: number | nul
         stale={!isToday && meetings.length > 0} />
       <main id="main">{children}</main>
       <footer>
-        <span>Cards: Sporting Life (run <b>GET_TODAYS_CARDS.bat</b> to refresh)</span>
-        <span>Figures: our speed figures · 9st Flat / 11st jumps base</span>
+        <span>FurlongIQ racecards · updated daily</span>
+        <span>FIQ speed ratings · 9st Flat / 11st jumps base</span>
         <span className="legend">Ranked within each race <i aria-hidden /> <em>worst → best</em></span>
         <Link href="/how-we-rate" prefetch={false}>How we rate the horses</Link>
       </footer>

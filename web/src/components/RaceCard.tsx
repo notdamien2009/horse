@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import type { Race, Runner, FormRun, Conditions, ClassChange, PaceInfo } from "@/lib/racing";
 import { ChartLegend, FigChart, FitTags, TrendBadge, chartRuns, runVal, trendOf } from "./FigChart";
 import { f0, hueStyle, rankHue, scaleHue, type HueFn } from "@/lib/colours";
-import { toDecimalOdds } from "@/lib/odds";
 import { RaceViewNav } from "./RaceViewNav";
 
 const SEC_KEYS = ["last", "avg3", "best", "best2yo"] as const;
@@ -174,11 +173,10 @@ export function RaceCard({ race: r }: { race: Race }) {
                 <span className="leader-nums">
                   <span className="leader-fig">{f0(head(leader))}</span>
                   {m.gap != null && <span className={`clear${m.gap >= 5 ? " wide" : ""}`}>{m.gap > 0 ? `+${m.gap} clear` : "joint top"}</span>}
-                  {(leader.odds || leader.forecast_odds) && <span className="leader-odds">{toDecimalOdds(leader.odds || leader.forecast_odds)}</span>}
                 </span>
               </a>
             ) : <div className="leader none">No ratings for this race yet.</div>}
-            {r.verdict && <div className="verdict"><b>Sporting Life verdict</b><p>{r.verdict}</p></div>}
+            {r.verdict && <div className="verdict"><b>Race verdict</b><p>{r.verdict}</p></div>}
           </div>
         </div>
       </section>
@@ -268,7 +266,6 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
   const top = x.rank === 1, rt = x.ratings;
   const hue = m.headHue(head);
   const behind = head != null && m.top != null ? Math.round(m.top - head) : null;
-  const odds = x.odds || x.forecast_odds || "";
   const keys = SEC_KEYS.filter((k) => k !== "best2yo" || (m.show2 && (juv || rt.best2yo != null)));
   const panelId = `form-${x.ride_id}`;
   return (
@@ -353,12 +350,10 @@ function RunnerCard({ x, i, head, b3, juv, m, pct, isOpen, onToggle, cond }: {
           </div>
         </div>
         <div className="c-odds">
-          <span className={`win-pct${x.win_pct == null ? " na" : ""}`} title={x.win_pct == null ? "No form-only win probability for this runner" : `Form-only win chance ${x.win_pct.toFixed(1)}%. Fair odds ${x.fair_odds != null ? x.fair_odds.toFixed(2) : "–"}. Compare with the live price: if the price is bigger than our fair odds, it may be value.`}>
+          <span className={`win-pct${x.win_pct == null ? " na" : ""}`} title={x.win_pct == null ? "No form-only win probability for this runner" : `Form-only win chance ${x.win_pct.toFixed(1)}%. Fair odds ${x.fair_odds != null ? x.fair_odds.toFixed(2) : "–"}. If the market price is bigger than our fair odds, it may be value.`}>
             {x.win_pct == null ? "–" : `${x.win_pct.toFixed(0)}%`}
           </span>
           <small className="fair">{x.fair_odds != null ? <>Fair <b>{x.fair_odds.toFixed(2)}</b></> : "Fair –"}</small>
-          <span className="odds">{odds ? toDecimalOdds(odds) : "–"}</span>
-          <small>{x.odds ? "odds" : x.forecast_odds ? "forecast" : ""}</small>
         </div>
         <div className="c-exp">
           <button type="button" className="exp-btn" aria-expanded={isOpen} aria-controls={panelId} onClick={onToggle}
@@ -419,7 +414,7 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
         <thead>
           <tr>
             <th>Date</th><th>Course</th><th>Dist</th><th>Going</th><th>Type</th><th className="n">Cl</th>
-            <th className="n">Pos</th><th className="n">Btn</th><th className="n">SP</th><th className="n">OR</th>
+            <th className="n">Pos</th><th className="n">Btn</th><th className="n">OR</th>
             <th className="n" title={juv ? "Figure on the 2yo scale (as in the chart)" : undefined}>{juv ? "2yo Fig" : "Fig"}</th>
             <th title="Was this a truly run race, or a slow-run sprint finish? Hover for why.">Pace</th>
             <th>vs today</th><th>Comment</th>
@@ -443,7 +438,6 @@ function FormTable({ runs, hue, juv }: { runs: FormRun[]; hue: HueFn; juv: boole
                 <td className="n">{f.cls}</td>
                 <td className="n"><span className={`pos ${posClass(f.pos)}`}>{f.pos || "–"}{f.ran ? <small>/{f.ran}</small> : null}</span></td>
                 <td className="n">{f.btn == null ? "" : f.pos === "1" ? "–" : f.btn}</td>
-                <td className="n">{f.sp ? toDecimalOdds(f.sp) : ""}</td>
                 <td className="n">{f.or ?? ""}</td>
                 <td className={`n${unsure ? ` fig-unsure ${f.pace!.figRel}` : ""}`} title={figTitle}>
                   <HeatPill v={v} hue={hue(v)} title={figTitle} />
